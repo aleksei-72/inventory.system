@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\UserTokenRepository;
+use App\Repository\SessionRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass=UserTokenRepository::class)
+ * @ORM\Entity(repositoryClass=SessionRepository::class)
  */
-class UserToken
+class Session
 {
     /**
      * @ORM\Id

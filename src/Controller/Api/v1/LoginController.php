@@ -3,8 +3,7 @@
 namespace App\Controller\Api\v1;
 
 use App\Entity\User;
-use App\Entity\UserToken;
-use MongoDB\Driver\Manager;
+use App\Entity\Session;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -41,24 +40,25 @@ class LoginController extends AbstractController
         }
 
         $user = $user[0];
+
         if(!password_verify($password, $user->getPassword())) {
             return $this->json(['status' => 'error',  'description' => 'incorrect password'], 401);
         }
 
-        $tokenRepos = $this->getDoctrine()->getRepository(UserToken::class);
+        $sessionRepos = $this->getDoctrine()->getRepository(Session::class);
 
-        $findTokens = $tokenRepos->findBy(['userId' => $user->getId()]);
+        $activeSessions = $sessionRepos->findBy(['userId' => $user->getId()]);
 
         $manager = $this->getDoctrine()->getManager();
-        if(count($findTokens) !== 0) {
+        if(count($activeSessions) !== 0) {
             //Удалить незавершенные сеансы текущего пользователя
-            foreach ($findTokens as $item) {
-                $manager->remove($item);
+            foreach ($activeSessions as $session) {
+                $manager->remove($session);
             }
             $manager->flush();
         }
 
-        $token = new UserToken();
+        $token = new Session();
         $token->setToken($this->generateToken());
         $token->setTerm(time());
         $token->setUserId($user->getId());
@@ -79,13 +79,13 @@ class LoginController extends AbstractController
             $tokenString = $request->headers->get('authorization');
 
             $manager = $this->getDoctrine()->getManager();
-            $tokens = $this->getDoctrine()->getRepository(UserToken::class)->
+            $activeSession = $this->getDoctrine()->getRepository(Session::class)->
             findBy(['token' => $tokenString]);
 
-
-            if(count($tokens) !== 0) {
-                foreach ($tokens as $item) {
-                    $manager->remove($item);
+            //Удаление активной сессии
+            if(count($activeSession) !== 0) {
+                foreach ($activeSession as $session) {
+                    $manager->remove($session);
                 }
                 $manager->flush();
             }
