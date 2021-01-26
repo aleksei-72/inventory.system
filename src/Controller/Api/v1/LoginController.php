@@ -4,6 +4,7 @@ namespace App\Controller\Api\v1;
 
 use App\Entity\User;
 use App\Entity\Session;
+use App\Service\UserLogin;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,6 +13,9 @@ use Symfony\Component\HttpFoundation\Request;
 
 class LoginController extends AbstractController
 {
+
+    //Срок действия токена (сек)
+    const TOKEN_VALIDITY_PERIOD = 3;//60 * 60 * 2;
     /**
      * @Route("/v1/login", methods={"POST"})
      * @param Request $request
@@ -33,14 +37,16 @@ class LoginController extends AbstractController
         }
 
 
+        //Поиск пользователя в базе
         $user = $this->getDoctrine()->getRepository(User::class)->findBy(['name' => $login]);
 
-        if(count($user) != 1) {
+        if(count($user) !== 1) {
             return $this->json(['status' => 'error',  'description' => 'not found user'], 401);
         }
 
         $user = $user[0];
 
+        //Проверка пароля
         if(!password_verify($password, $user->getPassword())) {
             return $this->json(['status' => 'error',  'description' => 'incorrect password'], 401);
         }
@@ -52,46 +58,69 @@ class LoginController extends AbstractController
         $manager = $this->getDoctrine()->getManager();
         if(count($activeSessions) !== 0) {
             //Удалить незавершенные сеансы текущего пользователя
-            foreach ($activeSessions as $session) {
-                $manager->remove($session);
+            foreach ($activeSessions as $item) {
+                $manager->remove($item);
             }
             $manager->flush();
         }
 
-        $token = new Session();
-        $token->setToken($this->generateToken());
-        $token->setTerm(time());
-        $token->setUserId($user->getId());
+        $token = $this->generateToken();
+        //Проверка уникальности токена
+        $countIteration = 0;
+        while (true) {
+            $sessionsWithSameToken = $this->getDoctrine()->getRepository(Session::class)->findBy(['token' => $token]);
 
-        $manager->persist($token);
+            if(count($sessionsWithSameToken) === 0) {
+                break;
+            }
+            $token = $this->generateToken();
+            $countIteration ++;
+
+            if($countIteration === 25) {
+                return $this->json(['status' => 'error',  'description' => 'too many users. Try later'], 401);
+            }
+        }
+
+        //Занести сессию в базу
+        $session = new Session();
+        $session->setToken($token);
+        $session->setTerm(time() + self::TOKEN_VALIDITY_PERIOD);
+        $session->setUserId($user->getId());
+
+        $manager->persist($session);
         $manager->flush();
 
 
-        return $this->json(['status' => 'ok', 'token' => $token->getToken()]);
+        return $this->json(['status' => 'ok', 'token' => $session->getToken()]);
     }
 
     /**
      * @Route("/v1/logout", methods={"POST"})
+     * @param Request $request
      * @return JsonResponse
      */
     public function logout(Request $request):JsonResponse {
-        if ($request->headers->has('Authorization')) {
-            $tokenString = $request->headers->get('authorization');
 
-            $manager = $this->getDoctrine()->getManager();
-            $activeSession = $this->getDoctrine()->getRepository(Session::class)->
-            findBy(['token' => $tokenString]);
-
-            //Удаление активной сессии
-            if(count($activeSession) !== 0) {
-                foreach ($activeSession as $session) {
-                    $manager->remove($session);
-                }
-                $manager->flush();
-            }
-
+        if(UserLogin::check($request, $this->getDoctrine())) {
+            UserLogin::removeSession($this->getDoctrine());
         }
+
         return $this->json(['status' => 'ok']);
+    }
+
+    /**
+     * @Route("/v1/whoami", methods={"GET"})
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function whoAmI(Request $request):JsonResponse {
+
+        if(!UserLogin::check($request, $this->getDoctrine())) {
+            return $this->json(['status' => 'error',  'description' => 'not authorize'], 401);
+        }
+
+        return $this->json(['status' => 'ok', 'name' => UserLogin::$user->getName(), 'role' => UserLogin::$user->getRole(),
+            'email' => UserLogin::$user->getEmail()]);
     }
 
     private function generateToken():string {
@@ -104,7 +133,8 @@ class LoginController extends AbstractController
             }
             $token .= $sourceString[random_int(0,strlen($sourceString ) - 1)];
         }
+
         return 'jbxpc-km0cz-xfwq2-v3jdj-ou08u-fxxon-2hl21';
-        return $token;
+        //return $token;
     }
 }
