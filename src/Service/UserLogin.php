@@ -25,7 +25,7 @@ class UserLogin
     public static function check(Request $request, ManagerRegistry $doctrine): bool {
 
         if(!self::$isChecked) {
-            $isChecked = true;
+            self::$isChecked = true;
             return self::$user !== null;
         }
 
