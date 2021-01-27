@@ -5,7 +5,7 @@ namespace App\DataFixtures;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use App\Entity\User;
-use App\Entity\UserToken;
+use App\Entity\Session;
 
 class AppFixtures extends Fixture
 {
@@ -19,6 +19,7 @@ class AppFixtures extends Fixture
 
             $user->setName("user_$i");
             $user->setRole('user');
+            $user->setEmail("user_$i@example.com");
             $user->setPassword(password_hash('P@ssw0rd', PASSWORD_DEFAULT));
             $manager->persist($user);
         }

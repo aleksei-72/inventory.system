@@ -15,7 +15,7 @@ class LoginController extends AbstractController
 {
 
     //Срок действия токена (сек)
-    const TOKEN_VALIDITY_PERIOD = 3;//60 * 60 * 2;
+    const TOKEN_VALIDITY_PERIOD = 60 * 60 * 2;
     /**
      * @Route("/v1/login", methods={"POST"})
      * @param Request $request

@@ -5,12 +5,15 @@ namespace App\Service;
 use App\Controller\Api\v1\LoginController;
 use App\Entity\User;
 use App\Entity\Session;
+use Doctrine\ORM\Query\Expr\Select;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Persistence\ManagerRegistry;
 
 class UserLogin
 {
     public static $user, $session;
+
+    public static $isChecked = false;
 
     /**
      * Проверка авторизации клиента + продление токена
@@ -20,6 +23,11 @@ class UserLogin
      * @return bool
      */
     public static function check(Request $request, ManagerRegistry $doctrine): bool {
+
+        if(!self::$isChecked) {
+            $isChecked = true;
+            return self::$user !== null;
+        }
 
         if (!$request->headers->has('Authorization')) {
             return false;
