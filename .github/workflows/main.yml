@@ -10,6 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Install packages
+        uses: baschny/php-composer-action@v1
+        with:
+          command: install
       - uses: actions/upload-artifact@v2
         with:
           path: ./
