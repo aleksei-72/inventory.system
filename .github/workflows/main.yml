@@ -1,0 +1,57 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ master, dev ]
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install packages
+        uses: baschny/php-composer-action@v1
+        with:
+          command: install
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./
+          name: api
+
+  deploy_dev:
+    name: Deploy to dev server
+    if: contains( github.ref, 'dev' )
+    needs: [ setup ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: api
+      - name: Deploy to development server
+        uses: up9cloud/action-rsync@v1.3
+        env:
+          USER: deployer
+          HOST: msk-svrm-go.s.dfms.ga
+          PORT: 456
+          KEY: ${{ secrets.DEPLOY_KEY }}
+          TARGET: /srv/inventory/api/stage
+
+  deploy_production:
+    name: Deploy to production server
+    if: contains( github.ref, 'master' )
+    needs: [ setup ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: api
+      - name: Deploy to production server
+        uses: up9cloud/action-rsync@v1.3
+        env:
+          USER: deployer
+          HOST: msk-svrm-go.s.dfms.ga
+          PORT: 456
+          KEY: ${{ secrets.DEPLOY_KEY }}
+          TARGET: /srv/inventory/api/master
+  
