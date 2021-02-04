@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install packages
-        uses: baschny/php-composer-action@v5
+        uses: php-actions/composer@v5
         with:
           command: install
       - name: Prepare artifact
