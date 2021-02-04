@@ -2,7 +2,7 @@ name: CI/CD
 
 on:
   push:
-    branches: [ master, dev ]
+    branches: [ master, dev, ci ]
 
 jobs:
   setup:
@@ -10,10 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install packages
-        uses: baschny/php-composer-action@v1
+      - name: Set up PHP
+        uses: shivammathur/setup-php@2.9.0
         with:
-          command: install
+          php-version: "8.0"
+      - name: Install packages
+        uses: ramsey/composer-install@1.1.0
+        with:
+          composer-options: "--ignore-platform-reqs"
       - name: Prepare artifact
         run: zip -qq -r api.zip .
       - name: Upload artifact
@@ -21,6 +25,23 @@ jobs:
         with:
           name: api
           path: api.zip
+
+  deploy_docs:
+    name: Deploy API documentation
+    if: contains( github.ref, 'dev' )
+    needs: [ setup ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update OpenAPI documentation file
+        uses: up9cloud/action-rsync@v1.3
+        env:
+          USER: deployer
+          HOST: msk-svrm-go.s.dfms.ga
+          PORT: 456
+          KEY: ${{ secrets.DEPLOY_KEY }}
+          SOURCE: docs.json
+          TARGET: /srv/inventory/api/docs/docs.json
 
   deploy_dev:
     name: Deploy to dev server
@@ -38,6 +59,7 @@ jobs:
       - name: Deploy to development server
         uses: up9cloud/action-rsync@v1.3
         env:
+          ARGS: -avz --delete --exclude-from=.gitignore
           USER: deployer
           HOST: msk-svrm-go.s.dfms.ga
           PORT: 456
@@ -60,6 +82,7 @@ jobs:
       - name: Deploy to production server
         uses: up9cloud/action-rsync@v1.3
         env:
+          ARGS: -avz --delete --exclude-from=.gitignore
           USER: deployer
           HOST: msk-svrm-go.s.dfms.ga
           PORT: 456
