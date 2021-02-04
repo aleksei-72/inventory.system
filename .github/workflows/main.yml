@@ -22,6 +22,23 @@ jobs:
           name: api
           path: api.zip
 
+  deploy_docs:
+    name: Deploy API documentation
+    if: contains( github.ref, 'dev' )
+    needs: [ setup ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update OpenAPI documentation file
+        uses: up9cloud/action-rsync@v1.3
+        env:
+          USER: deployer
+          HOST: msk-svrm-go.s.dfms.ga
+          PORT: 456
+          KEY: ${{ secrets.DEPLOY_KEY }}
+          SOURCE: docs.json
+          TARGET: /srv/inventory/api/docs/docs.json
+
   deploy_dev:
     name: Deploy to dev server
     if: contains( github.ref, 'dev' )
