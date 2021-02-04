@@ -11,9 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install packages
-        uses: php-actions/composer@v5
+        uses: MilesChou/composer-action/8.0/install@v1.0.2
         with:
-          command: install
+          args: install
       - name: Prepare artifact
         run: zip -qq -r api.zip .
       - name: Upload artifact
