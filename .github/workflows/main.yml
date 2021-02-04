@@ -10,8 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2.9.0
+        with:
+          php-version: "8.0"
       - name: Install packages
-        uses: MilesChou/composer-action/8.0/install@v1.0.2
+        uses: "ramsey/composer-install@v1.1.0"
+        with:
+          composer-options: "--ignore-platform-reqs"
       - name: Prepare artifact
         run: zip -qq -r api.zip .
       - name: Upload artifact
