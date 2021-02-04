@@ -49,7 +49,6 @@ jobs:
     needs: [ setup ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: api
@@ -60,7 +59,7 @@ jobs:
       - name: Deploy to development server
         uses: up9cloud/action-rsync@v1.3
         env:
-          ARGS: -avz --delete --exclude-from=/.gitignore/
+          ARGS: -avz --delete --exclude-from=.gitignore
           USER: deployer
           HOST: msk-svrm-go.s.dfms.ga
           PORT: 456
@@ -73,7 +72,6 @@ jobs:
     needs: [ setup ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
           name: api
@@ -84,7 +82,7 @@ jobs:
       - name: Deploy to production server
         uses: up9cloud/action-rsync@v1.3
         env:
-          ARGS: -avz --delete --exclude-from=/.gitignore/
+          ARGS: -avz --delete --exclude-from=.gitignore
           USER: deployer
           HOST: msk-svrm-go.s.dfms.ga
           PORT: 456
