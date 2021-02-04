@@ -59,7 +59,7 @@ jobs:
       - name: Deploy to development server
         uses: up9cloud/action-rsync@v1.3
         env:
-          ARGS: -avz --delete --exclude-from=.gitignore
+          ARGS: -avz --delete --exclude=.git --exclude=.github --exclude=.env.local
           USER: deployer
           HOST: msk-svrm-go.s.dfms.ga
           PORT: 456
