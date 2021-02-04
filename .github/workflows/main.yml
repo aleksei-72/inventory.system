@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install packages
-        uses: MilesChou/composer-action/8.0/install@v1.0.2
+        uses: MilesChou/composer-action@v1.0.2
         with:
           args: install
       - name: Prepare artifact
