@@ -28,7 +28,8 @@ jobs:
 
   deploy_docs:
     name: Deploy API documentation
-    if: contains( github.ref, 'dev' )
+  # if: contains( github.ref, 'dev' )
+    if: contains( github.ref, 'disable' )
     needs: [ setup ]
     runs-on: ubuntu-latest
     steps:
