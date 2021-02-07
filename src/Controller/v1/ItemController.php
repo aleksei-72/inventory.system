@@ -66,7 +66,7 @@ class ItemController extends AbstractController
 
         $itemRepos = $doctrine->getRepository(Item::class);
 
-        $itemsArray = $itemRepos->findBy($findCriteria, [], (int)$limit, (int)$skip);
+        $itemsArray = $itemRepos->findBy($findCriteria, ['id' => 'ASC'], (int)$limit, (int)$skip);
 
         $json = ['status' => 'ok', 'items' => array()];
 
@@ -84,6 +84,7 @@ class ItemController extends AbstractController
             $arr['category']['title'] = $item->getCategory()->getTitle();
 
             $itemProfile = $item->getProfile();
+
             if($itemProfile) {
                 $arr['profile']['id'] = $itemProfile->getId();
                 $arr['profile']['name'] = $itemProfile->getName();
