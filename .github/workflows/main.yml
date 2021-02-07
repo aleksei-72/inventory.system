@@ -14,6 +14,7 @@ jobs:
         uses: shivammathur/setup-php@2.9.0
         with:
           php-version: "8.0"
+          extensions: pgsql
       - name: Install packages
         uses: ramsey/composer-install@1.1.0
         with:
@@ -28,7 +29,8 @@ jobs:
 
   deploy_docs:
     name: Deploy API documentation
-    if: contains( github.ref, 'dev' )
+  # if: contains( github.ref, 'dev' )
+    if: contains( github.ref, 'disable' )
     needs: [ setup ]
     runs-on: ubuntu-latest
     steps:
@@ -82,7 +84,7 @@ jobs:
       - name: Deploy to production server
         uses: up9cloud/action-rsync@v1.3
         env:
-          ARGS: -avz --delete --exclude-from=.gitignore
+          ARGS: -avz --delete --exclude=.git --exclude=.github --exclude=.env.local
           USER: deployer
           HOST: msk-svrm-go.s.dfms.ga
           PORT: 456
