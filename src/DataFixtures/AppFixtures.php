@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\Category;
 use App\Entity\Department;
 use App\Entity\Item;
+use App\Entity\Profile;
 use App\Entity\Room;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -24,6 +25,20 @@ class AppFixtures extends Fixture
         $comments = array("Работает", "Частично неисправен", "Сломан");
 
 
+        $profiles = array();
+        $profileTitles = array("Коптев Н.С.", "Басташвилли А.В.");
+
+
+        for ($i = 0; $i < count($profileTitles); $i ++) {
+            $a = new Profile();
+            $a->setName($profileTitles[$i]);
+            array_push($profiles, $a);
+
+            $manager->persist($a);
+        }
+
+
+
         for ($i = 0; $i < count($categoryTitles); $i ++) {
             $a = new Category();
             $a->setTitle($categoryTitles[$i]);
@@ -34,6 +49,8 @@ class AppFixtures extends Fixture
 
         $itemNumber = 1700501;
 
+        $itemCreatedAt = time();
+
         for($i = 0; $i < 3; $i ++)
         {
             $department = new Department();
@@ -41,7 +58,7 @@ class AppFixtures extends Fixture
             $department->setAddress("г.ххх, ул.ххх, д. $i");
             $manager->persist($department);
 
-            $roomCount = rand(10, 40);
+            $roomCount = rand(2, 5);
             for ($j = 0; $j < $roomCount ; $j ++) {
                 $room = new Room();
                 $room->setNumber("$j");
@@ -49,7 +66,7 @@ class AppFixtures extends Fixture
 
                 $manager->persist($room);
 
-                $itemInRoomCount = rand(5, 20);
+                $itemInRoomCount = rand(1, 3);
                 for ($l = 0; $l <= $itemInRoomCount; $l ++) {
                     $random = rand(0, count($categoryTitles));
 
@@ -59,7 +76,17 @@ class AppFixtures extends Fixture
                     $item->addRoom($room);
                     $item->setCount(rand(1, 25));
                     $item->setComment($comments[array_rand($comments)]);
+
+                    $item->setCreatedAt( $itemCreatedAt);
+                    $item->setUpdatedAt($itemCreatedAt);
+
+                    $itemCreatedAt++;
+
                     $itemNumber ++;
+
+                    if(rand(0, 3) !== 2) {
+                        $item->setProfile($profiles[array_rand($profiles)]);
+                    }
 
                     switch ($random - 1) {
                         case 0:
@@ -93,22 +120,4 @@ class AppFixtures extends Fixture
         $manager->flush();
     }
 
-
-    public function load2(ObjectManager $manager)
-    {
-        // $product = new Product();
-        // $manager->persist($product);
-
-
-        $department = new Department();
-        $department->setTitle("keeek");
-        $department->setAddress("dfhfh");
-        //echo '$department->getId() = '. $department->getId();
-        $manager->persist($department);
-
-        //echo '$department->getId() = '. $department->getId();
-
-
-        $manager->flush();
-    }
 }

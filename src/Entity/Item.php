@@ -50,6 +50,21 @@ class Item
      */
     private $number;
 
+    /**
+     * @ORM\Column(type="integer", options={"default": "extract(epoch from now())"})
+     */
+    private $createdAt;
+
+    /**
+     * @ORM\Column(type="integer", options={"default": "extract(epoch from now())"})
+     */
+    private $updatedAt;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Profile::class, inversedBy="items")
+     */
+    private $profile;
+
 
     public function __construct()
     {
@@ -141,6 +156,42 @@ class Item
     public function setNumber(string $number): self
     {
         $this->number = $number;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?int
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(int $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?int
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(int $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getProfile(): ?Profile
+    {
+        return $this->profile;
+    }
+
+    public function setProfile(?Profile $profile): self
+    {
+        $this->profile = $profile;
 
         return $this;
     }
