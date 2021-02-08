@@ -26,18 +26,18 @@ class ItemController extends AbstractController
         $categoryId = $request->query->get('category_id');
 
         if(!is_numeric($limit)) {
-            return $this->json(['status' => 'error', 'description' => 'incorrect value of limit'], 400);
+            return $this->json(['error' => E_BAD_REQUEST, 'message' => 'incorrect value of limit'], 400);
         }
         if($limit < 0) {
-            return $this->json(['status' => 'error', 'description' => 'negative value of limit'], 400);
+            return $this->json(['error' => E_BAD_REQUEST, 'message' => 'negative value of limit'], 400);
         }
 
 
         if(!is_numeric($skip)) {
-            return $this->json(['status' => 'error', 'description' => 'incorrect value of skip'], 400);
+            return $this->json(['error' => E_BAD_REQUEST, 'message' => 'incorrect value of skip'], 400);
         }
         if($skip < 0) {
-            return $this->json(['status' => 'error', 'description' => 'negative value of skip'], 400);
+            return $this->json(['error' => E_BAD_REQUEST, 'message' => 'negative value of skip'], 400);
         }
 
 
@@ -48,7 +48,7 @@ class ItemController extends AbstractController
         if($categoryId) {
 
             if(!is_numeric($categoryId)) {
-                return $this->json(['status' => 'error', 'description' => 'incorrect value of category_id'], 400);
+                return $this->json(['error' => E_BAD_REQUEST, 'message' => 'incorrect value of category_id'], 400);
             }
 
 
@@ -57,7 +57,7 @@ class ItemController extends AbstractController
             $findCategory = $categoryRepos->find((int)$categoryId);
 
             if(!$findCategory) {
-                return $this->json(['status' => 'error', 'description' => 'not found category'], 400);
+                return $this->json(['error' => E_NOT_FOUND, 'message' => 'not found category'], 404);
             }
 
             $findCriteria['category'] = $findCategory;
@@ -68,7 +68,11 @@ class ItemController extends AbstractController
 
         $itemsArray = $itemRepos->findBy($findCriteria, ['id' => 'ASC'], (int)$limit, (int)$skip);
 
-        $json = ['status' => 'ok', 'items' => array()];
+        if(count($itemsArray) === 0) {
+            return $this->json(['error' => E_NOT_FOUND, 'message' => 'not found'], 404);
+        }
+
+        $json = ['items' => array()];
 
         foreach($itemsArray as $item) {
             $arr = array();
@@ -90,6 +94,30 @@ class ItemController extends AbstractController
                 $arr['profile']['name'] = $itemProfile->getName();
             } else {
                 $arr['profile'] = null;
+            }
+
+            $itemRooms = $item->getRoom();
+
+            if(count($itemRooms) !== 0) {
+
+                $arr['rooms'] = array();
+                foreach ($itemRooms as $room) {
+                    $roomInfo = array();
+
+                    $roomInfo['id'] = $room->getId();
+                    $roomInfo['number'] = $room->getNumber();
+
+                    $itemDepartment = $room->getDepartment();
+
+                    $roomInfo['department']['id'] = $itemDepartment->getId();
+                    $roomInfo['department']['title'] = $itemDepartment->getTitle();
+                    $roomInfo['department']['address'] = $itemDepartment->getAddress();
+
+                    array_push($arr['rooms'], $roomInfo);
+                }
+
+            } else {
+                $arr['rooms'] = null;
             }
 
 
