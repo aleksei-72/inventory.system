@@ -24,7 +24,7 @@ class User
     private $name;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $userName;
 
@@ -39,7 +39,7 @@ class User
     private $password;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", options={"default": "extract(epoch from now())"})
      */
     private $createdAt;
 

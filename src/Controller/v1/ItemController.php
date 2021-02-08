@@ -6,6 +6,7 @@ namespace App\Controller\v1;
 
 use App\Entity\Category;
 use App\Entity\Item;
+use App\ErrorList;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -15,29 +16,29 @@ use Symfony\Component\Routing\Annotation\Route;
 class ItemController extends AbstractController
 {
     /**
-     * @Route("/v1/items", methods={"GET"})
+     * @Route("/items", methods={"GET"})
      * @param Request $request
      * @return JsonResponse
      */
-    public function getItemList(Request $request) :JsonResponse {
+    public function getItemList(Request $request): JsonResponse {
 
         $limit = $request->query->get('limit', 50);
         $skip = $request->query->get('skip', 0);
         $categoryId = $request->query->get('category_id');
 
         if(!is_numeric($limit)) {
-            return $this->json(['error' => E_BAD_REQUEST, 'message' => 'incorrect value of limit'], 400);
+            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'incorrect value of limit'], 400);
         }
         if($limit < 0) {
-            return $this->json(['error' => E_BAD_REQUEST, 'message' => 'negative value of limit'], 400);
+            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'negative value of limit'], 400);
         }
 
 
         if(!is_numeric($skip)) {
-            return $this->json(['error' => E_BAD_REQUEST, 'message' => 'incorrect value of skip'], 400);
+            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'incorrect value of skip'], 400);
         }
         if($skip < 0) {
-            return $this->json(['error' => E_BAD_REQUEST, 'message' => 'negative value of skip'], 400);
+            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'negative value of skip'], 400);
         }
 
 
@@ -48,7 +49,7 @@ class ItemController extends AbstractController
         if($categoryId) {
 
             if(!is_numeric($categoryId)) {
-                return $this->json(['error' => E_BAD_REQUEST, 'message' => 'incorrect value of category_id'], 400);
+                return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'incorrect value of category_id'], 400);
             }
 
 
@@ -57,7 +58,7 @@ class ItemController extends AbstractController
             $findCategory = $categoryRepos->find((int)$categoryId);
 
             if(!$findCategory) {
-                return $this->json(['error' => E_NOT_FOUND, 'message' => 'not found category'], 404);
+                return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found category'], 404);
             }
 
             $findCriteria['category'] = $findCategory;
@@ -69,7 +70,7 @@ class ItemController extends AbstractController
         $itemsArray = $itemRepos->findBy($findCriteria, ['id' => 'ASC'], (int)$limit, (int)$skip);
 
         if(count($itemsArray) === 0) {
-            return $this->json(['error' => E_NOT_FOUND, 'message' => 'not found'], 404);
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found'], 404);
         }
 
         $json = ['items' => array()];
