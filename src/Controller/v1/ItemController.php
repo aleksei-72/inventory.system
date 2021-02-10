@@ -27,18 +27,18 @@ class ItemController extends AbstractController
         $categoryId = $request->query->get('category_id');
 
         if(!is_numeric($limit)) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'incorrect value of limit'], 400);
+            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'incorrect value of limit'], 400);
         }
         if($limit < 0) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'negative value of limit'], 400);
+            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'negative value of limit'], 400);
         }
 
 
         if(!is_numeric($skip)) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'incorrect value of skip'], 400);
+            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'incorrect value of skip'], 400);
         }
         if($skip < 0) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'negative value of skip'], 400);
+            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'negative value of skip'], 400);
         }
 
 
@@ -49,7 +49,7 @@ class ItemController extends AbstractController
         if($categoryId) {
 
             if(!is_numeric($categoryId)) {
-                return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'incorrect value of category_id'], 400);
+                return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'incorrect value of category_id'], 400);
             }
 
 
