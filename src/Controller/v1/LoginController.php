@@ -57,7 +57,7 @@ class LoginController extends AbstractController
         $jwt->set('userId', $user->getId());
         $jwt->set('userRole', $user->getRole());
 
-        return $this->json(['token' => $jwt->generate()]);
+        return $this->json($jwt->generate());
     }
 
 
@@ -68,7 +68,7 @@ class LoginController extends AbstractController
      * @return JsonResponse
      */
     public function updateToken(Request $request, JwtToken $jwt): JsonResponse {
-        return $this->json(['token' => $jwt->generate()]);
+        return $this->json($jwt->generate());
     }
 
     /**
@@ -89,7 +89,7 @@ class LoginController extends AbstractController
 
         $user = $findedUsers[0];
 
-        return $this->json(['name' => $user->getName(), 'userName' => $user->getUserName(),
+        return $this->json(['name' => $user->getName(), 'username' => $user->getUserName(),
             'email' => $user->getEmail(), 'createdAt' => $user->getCreatedAt(), 'role' => $user->getRole()]);
     }
 
