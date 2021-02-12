@@ -24,7 +24,17 @@ class ItemController extends AbstractController
 
         $limit = $request->query->get('limit', 50);
         $skip = $request->query->get('skip', 0);
-        $categoryId = $request->query->get('category_id');
+        $categoryId = $request->query->get('category_id', 0);
+        $orderBy = $request->query->get('sort', 'id');
+        $order = $request->query->get('order', 'desc');
+
+        if($order !== 'asc') {
+            $order = 'desc';
+        }
+
+        if(!in_array($orderBy, ['title', 'comment', 'count', 'createdAt', 'updatedAt', 'profile', 'number'], true)) {
+            $orderBy = 'id';
+        }
 
         if(!is_numeric($limit)) {
             return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'incorrect value of limit'], 400);
@@ -46,10 +56,10 @@ class ItemController extends AbstractController
 
         $findCriteria = array();
 
-        if($categoryId) {
+        if($categoryId !== 0) {
 
             if(!is_numeric($categoryId)) {
-                return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'incorrect value of category_id'], 400);
+                $categoryId = 0;
             }
 
 
@@ -57,17 +67,17 @@ class ItemController extends AbstractController
             $categoryRepos = $doctrine->getRepository(Category::class);
             $findCategory = $categoryRepos->find((int)$categoryId);
 
-            if(!$findCategory) {
-                return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found category'], 404);
+            if($findCategory) {
+                $findCriteria['category'] = $findCategory;
             }
 
-            $findCriteria['category'] = $findCategory;
+
         }
 
 
         $itemRepos = $doctrine->getRepository(Item::class);
 
-        $itemsArray = $itemRepos->findBy($findCriteria, ['id' => 'ASC'], (int)$limit, (int)$skip);
+        $itemsArray = $itemRepos->findBy($findCriteria, [$orderBy => $order], (int)$limit, (int)$skip);
 
         if(count($itemsArray) === 0) {
             return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found'], 404);
