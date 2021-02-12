@@ -29,6 +29,6 @@ class ErrorController extends \Symfony\Bundle\FrameworkBundle\Controller\Abstrac
         if($code == 401) {
             $error = ErrorList::E_UNAUTHORIZED;
         }
-        return new JsonResponse(['error' => $error, 'message' => $message], $code);
+        return new JsonResponse(['error' => $error, 'message' => $message, 'original_code' => $exception->getCode()], $code);
     }
 }

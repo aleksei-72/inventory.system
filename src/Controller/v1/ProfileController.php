@@ -5,6 +5,8 @@ namespace App\Controller\v1;
 
 use App\Entity\Profile;
 use App\ErrorList;
+use App\Service\JwtToken;
+use App\UserRoleList;
 use http\Env\Response;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,9 +18,15 @@ class ProfileController extends AbstractController
     /**
      * @Route("/profiles", methods={"POST"})
      * @param Request $request
+     * @param JwtToken $jwt
      * @return JsonResponse
      */
-    public function createProfile(Request $request): JsonResponse {
+    public function createProfile(Request $request, JwtToken $jwt): JsonResponse {
+
+        if($jwt->get('user_role') == UserRoleList::U_READONLY) {
+            return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'do not have permission'], 403);
+        }
+
         $inputJson = json_decode($request->getContent(), true);
 
         if(!$inputJson) {
@@ -44,7 +52,12 @@ class ProfileController extends AbstractController
      * @param $id
      * @return JsonResponse
      */
-    public function updateProfile(Request $request, $id): JsonResponse {
+    public function updateProfile(Request $request, JwtToken $jwt, $id): JsonResponse {
+
+        if($jwt->get('user_role') == UserRoleList::U_READONLY) {
+            return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'do not have permission'], 403);
+        }
+
         $inputJson = json_decode($request->getContent(), true);
 
         if(!$inputJson) {

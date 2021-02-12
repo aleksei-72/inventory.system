@@ -6,6 +6,7 @@ namespace App\Controller\v1;
 use App\Entity\User;
 use App\ErrorList;
 use App\Service\JwtToken;
+use App\UserRoleList;
 use Firebase\JWT\ExpiredException;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -54,8 +55,8 @@ class LoginController extends AbstractController
         }
 
         $jwt = new JwtToken();
-        $jwt->set('userId', $user->getId());
-        $jwt->set('userRole', $user->getRole());
+        $jwt->set('user_id', $user->getId());
+        $jwt->set('user_role', $user->getRole());
 
         return $this->json($jwt->generate());
     }
@@ -81,7 +82,7 @@ class LoginController extends AbstractController
 
         $userRepos = $this->getDoctrine()->getRepository(User::class);
 
-        $findedUsers = $userRepos->findBy(['id' => $jwt->get('userId')]);
+        $findedUsers = $userRepos->findBy(['id' => $jwt->get('user_id')]);
 
         if(count($findedUsers) !== 1) {
             return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'user not found'], 404);
@@ -90,7 +91,51 @@ class LoginController extends AbstractController
         $user = $findedUsers[0];
 
         return $this->json(['name' => $user->getName(), 'username' => $user->getUserName(),
-            'email' => $user->getEmail(), 'createdAt' => $user->getCreatedAt(), 'role' => $user->getRole()]);
+            'email' => $user->getEmail(), 'created_at' => $user->getCreatedAt(), 'role' => $user->getRole()]);
+    }
+
+    /**
+     * !--@Route("/dev/createusers")
+     */
+    public function testCreateUsers(): JsonResponse {
+        $manager = $this->getDoctrine()->getManager();
+
+        for ($i = 0; $i < 10; $i++) {
+            $user = new User();
+            $user->setUserName("user_$i");
+            $user->setName("Иванов Иван Иванович");
+            $user->setPassword(password_hash("P@ssw0rd_$i", PASSWORD_BCRYPT));
+            $user->setEmail("user_$i@example.com");
+            $user->setRole(UserRoleList::U_USER);
+            $user->setCreatedAt(time());
+
+
+
+
+            $reader = new User();
+            $reader->setUserName("reader_$i");
+            $reader->setName("Иванов Иван Иванович");
+            $reader->setPassword(password_hash("P@ssw0rd_$i", PASSWORD_BCRYPT));
+            $reader->setEmail("reader_$i@example.com");
+            $reader->setRole(UserRoleList::U_READONLY);
+            $reader->setCreatedAt(time());
+
+            $manager->persist($user);
+            $manager->persist($reader);
+        }
+
+        $user = new User();
+        $user->setUserName("admin");
+        $user->setName("admin");
+        $user->setPassword(password_hash("P@ssw0rd", PASSWORD_BCRYPT));
+        $user->setEmail("admin@example.com");
+        $user->setRole(UserRoleList::U_ADMIN);
+        $user->setCreatedAt(time());
+
+        $manager->persist($user);
+        $manager->flush();
+
+        return $this->json(['ok' => 'ok']);
     }
 
 }
