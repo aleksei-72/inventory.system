@@ -13,7 +13,7 @@ use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 class ControllerListener
 {
-    private $allowedRoutes = array('/auth', '/items', '/dev/createusers');
+    private $allowedRoutes = array('/auth', '/dev/createusers');
 
     public function onKernelController(ControllerEvent $event) {
 
