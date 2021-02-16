@@ -44,11 +44,12 @@ class CategoryController extends AbstractController
     public function createCategory(Request $request): JsonResponse {
         $inputJson = json_decode($request->getContent(), true);
 
-                if(!$inputJson) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'not found body of request'], 400);
+        if(!$inputJson) {
+            return $this->json(['error' => ErrorList::E_REQUEST_BODY_NOT_FOUND, 'message' => 'not found body of request'], 400);
         }
+
         if(empty($inputJson['title'])) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'not found title of category'], 400);
+            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'not found title of category'], 400);
         }
 
         $manager = $this->getDoctrine()->getManager();

@@ -27,14 +27,14 @@ class LoginController extends AbstractController
         $inputJson = json_decode($request->getContent(), true);
 
         if(!$inputJson) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'not found body of request'], 400);
+            return $this->json(['error' => ErrorList::E_REQUEST_BODY_NOT_FOUND, 'message' => 'not found body of request'], 400);
         }
         if(empty($inputJson['username'])) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'not found username'], 400);
+            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'not found username'], 400);
         }
 
         if(empty($inputJson['password'])) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'not found password'], 400);
+            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'not found password'], 400);
         }
 
         $userName = $inputJson['username'];
@@ -45,13 +45,13 @@ class LoginController extends AbstractController
         $findedUsers = $userRepos->findBy(['userName' => $userName]);
 
         if(count($findedUsers) !== 1) {
-            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'user not found'], 404);
+            return $this->json(['error' => ErrorList::E_USER_NOT_FOUND, 'message' => 'user not found'], 404);
         }
 
         $user = $findedUsers[0];
 
         if(!password_verify($password, $user->getPassword())) {
-            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'password not verify'], 400);
+            return $this->json(['error' => ErrorList::E_INVALID_PASSWORD, 'message' => 'password not verify'], 400);
         }
 
         $jwt = new JwtToken();
@@ -84,9 +84,6 @@ class LoginController extends AbstractController
 
         $findedUsers = $userRepos->findBy(['id' => $jwt->get('user_id')]);
 
-        if(count($findedUsers) !== 1) {
-            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'user not found'], 404);
-        }
 
         $user = $findedUsers[0];
 

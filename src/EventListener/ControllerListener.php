@@ -58,7 +58,7 @@ class ControllerListener
 
 
             $event->setController(function () {
-                return new JsonResponse(['error' => ErrorList::E_TOKEN_NOT_FOUND,
+                return new JsonResponse(['error' => ErrorList::E_UNAUTHORIZED,
                     'message' => 'not found Authorization header'], 401);
             });
             return 1;

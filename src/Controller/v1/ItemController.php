@@ -31,7 +31,7 @@ class ItemController extends AbstractController
         $orderBy = $request->query->get('sort', 'id');
         $order = $request->query->get('order', 'desc');
 
-        if($order !== 'asc') {
+        if(strtolower($order) !== 'asc') {
             $order = 'desc';
         }
 
@@ -39,19 +39,13 @@ class ItemController extends AbstractController
             $orderBy = 'id';
         }
 
-        if(!is_numeric($limit)) {
-            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'incorrect value of limit'], 400);
-        }
-        if($limit < 0) {
-            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'negative value of limit'], 400);
+        if(!is_numeric($limit) || $limit < 0) {
+            $limit = 50;
         }
 
 
-        if(!is_numeric($skip)) {
-            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'incorrect value of skip'], 400);
-        }
-        if($skip < 0) {
-            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'negative value of skip'], 400);
+        if(!is_numeric($skip) || $skip < 0) {
+            $skip = 0;
         }
 
 
@@ -61,10 +55,9 @@ class ItemController extends AbstractController
 
         if($categoryId !== 0) {
 
-            if(!is_numeric($categoryId)) {
+            if(!is_numeric($categoryId) || $categoryId < 0) {
                 $categoryId = 0;
             }
-
 
 
             $categoryRepos = $doctrine->getRepository(Category::class);
@@ -156,7 +149,7 @@ class ItemController extends AbstractController
         $inputJson = json_decode($request->getContent(), true);
 
         if(!$inputJson) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'not found body of request'], 400);
+            return $this->json(['error' => ErrorList::E_REQUEST_BODY_NOT_FOUND, 'message' => 'not found body of request'], 400);
         }
 
         try {
@@ -164,7 +157,7 @@ class ItemController extends AbstractController
             $categoryId = $inputJson['category_id'];
             $profileId = $inputJson['profile_id'];
         } catch (\Exception $e) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'incomplete data '], 400);
+            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'incomplete data '], 400);
         }
 
         $number = $inputJson['number'] ?? 0;
