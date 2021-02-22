@@ -13,9 +13,9 @@ use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 class ControllerListener
 {
+    private $allowedRoutes = array('/auth', '/dev/createusers');
 
     public function onKernelController(ControllerEvent $event) {
-
         //404 отдать без проверки токена
         if(get_class($event->getController()[0]) == 'App\Controller\ErrorController') {
             return 1;
