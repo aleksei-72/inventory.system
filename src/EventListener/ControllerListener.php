@@ -13,7 +13,6 @@ use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 class ControllerListener
 {
-    private $allowedRoutes = array('/auth', '/dev/createusers');
 
     public function onKernelController(ControllerEvent $event) {
 
@@ -28,7 +27,18 @@ class ControllerListener
 
             try {
                 $jwt = new JwtToken();
-                $jwt->createFromHeader($request->headers->get('Authorization'));
+                $header = $request->headers->get('Authorization');
+
+
+                if(!str_starts_with($header, 'Bearer ')) {
+                    $event->setController(function () {
+                        return new JsonResponse(['error' => ErrorList::E_TOKEN_INVALID,
+                            'message' => 'invalid authorization method'], 401);
+                    });
+                }
+
+                $header = substr($header, strlen('Bearer '));
+                $jwt->createFromHeader($header);
 
                 JwtToken::$initPayLoad = $jwt->getPayload();
             }

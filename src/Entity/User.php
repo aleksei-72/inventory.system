@@ -48,6 +48,11 @@ class User
      */
     private $role;
 
+    /**
+     * @ORM\Column(type="boolean", options={"default": "false"})
+     */
+    private $isBlocked = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -121,6 +126,18 @@ class User
     public function setRole(string $role): self
     {
         $this->role = $role;
+
+        return $this;
+    }
+
+    public function getIsBlocked(): ?bool
+    {
+        return $this->isBlocked;
+    }
+
+    public function setIsBlocked(bool $isBlocked): self
+    {
+        $this->isBlocked = $isBlocked;
 
         return $this;
     }

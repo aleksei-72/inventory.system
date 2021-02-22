@@ -3,11 +3,12 @@
 
 namespace App\Controller;
 
+use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Log\DebugLoggerInterface;
 use App\ErrorList;
 
-class ErrorController extends \Symfony\Bundle\FrameworkBundle\Controller\AbstractController
+class ErrorController extends AbstractController
 {
     public function show(\Throwable $exception, DebugLoggerInterface $logger): JsonResponse {
 
