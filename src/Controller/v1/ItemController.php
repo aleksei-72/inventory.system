@@ -74,6 +74,7 @@ class ItemController extends AbstractController
         $itemRepos = $doctrine->getRepository(Item::class);
 
         $itemsArray = $itemRepos->findBy($findCriteria, [$orderBy => $order], (int)$limit, (int)$skip);
+        $totalCount = $itemRepos->count($findCriteria);
 
         if(count($itemsArray) === 0) {
             return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found'], 404);
@@ -127,9 +128,10 @@ class ItemController extends AbstractController
                 $arr['rooms'] = null;
             }
 
-
             array_push($json['items'], $arr);
         }
+
+        $json['total_count'] = $totalCount;
         return $this->json($json);
     }
 
