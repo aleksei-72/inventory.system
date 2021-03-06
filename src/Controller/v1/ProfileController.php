@@ -30,7 +30,7 @@ class ProfileController extends AbstractController
         $inputJson = json_decode($request->getContent(), true);
 
         if(!$inputJson) {
-            return $this->json(['error' => ErrorList::E_REQUEST_BODY_NOT_FOUND, 'message' => 'not found body of request'], 400);
+            return $this->json(['error' => ErrorList::E_REQUEST_BODY_INVALID, 'message' => 'invalid body of request'], 400);
         }
         if(empty($inputJson['name'])) {
             return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'not found name of profile'], 400);
@@ -49,6 +49,7 @@ class ProfileController extends AbstractController
     /**
      * @Route("/profiles/{id}", requirements={"id"="\d+"}, methods={"PUT"})
      * @param Request $request
+     * @param JwtToken $jwt
      * @param $id
      * @return JsonResponse
      */
@@ -61,7 +62,7 @@ class ProfileController extends AbstractController
         $inputJson = json_decode($request->getContent(), true);
 
         if(!$inputJson) {
-            return $this->json(['error' => ErrorList::E_REQUEST_BODY_NOT_FOUND, 'message' => 'not found body of request'], 400);
+            return $this->json(['error' => ErrorList::E_REQUEST_BODY_INVALID, 'message' => 'invalid body of request'], 400);
         }
         if(empty($inputJson['name'])) {
             return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'not found name of profile'], 400);

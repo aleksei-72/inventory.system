@@ -7,13 +7,12 @@ namespace App\EventListener;
 use App\ErrorList;
 use App\Service\JwtToken;
 use Firebase\JWT\ExpiredException;
-use Firebase\JWT\JWT;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 class ControllerListener
 {
-    private $allowedRoutes = array('/auth', '/dev/createusers');
+    private $allowedRoutes = array('/auth');
 
     public function onKernelController(ControllerEvent $event) {
         //404 отдать без проверки токена
@@ -33,8 +32,10 @@ class ControllerListener
                 if(!str_starts_with($header, 'Bearer ')) {
                     $event->setController(function () {
                         return new JsonResponse(['error' => ErrorList::E_TOKEN_INVALID,
-                            'message' => 'invalid authorization method'], 401);
+                            'message' => 'loss \'Bearer\' in header Authorization'], 401);
                     });
+
+                    return 1;
                 }
 
                 $header = substr($header, strlen('Bearer '));

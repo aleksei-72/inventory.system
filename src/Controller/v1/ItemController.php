@@ -13,7 +13,6 @@ use App\UserRoleList;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ItemController extends AbstractController
@@ -35,7 +34,7 @@ class ItemController extends AbstractController
             $order = 'desc';
         }
 
-        if(!in_array($orderBy, ['title', 'comment', 'count', 'createdAt', 'updatedAt', 'profile', 'number'], true)) {
+        if(!in_array($orderBy, ['title', 'comment', 'count', 'createdAt', 'updatedAt', 'profile', 'number', 'price'], true)) {
             $orderBy = 'id';
         }
 
@@ -91,7 +90,7 @@ class ItemController extends AbstractController
             $arr['id'] = $item->getId();
             $arr['created_at'] = $item->getCreatedAt();
             $arr['updated_at'] = $item->getUpdatedAt();
-
+            $arr['price'] = $item->getPrice();
             $arr['category']['id'] = $item->getCategory()->getId();
             $arr['category']['title'] = $item->getCategory()->getTitle();
 
@@ -151,7 +150,7 @@ class ItemController extends AbstractController
         $inputJson = json_decode($request->getContent(), true);
 
         if(!$inputJson) {
-            return $this->json(['error' => ErrorList::E_REQUEST_BODY_NOT_FOUND, 'message' => 'not found body of request'], 400);
+            return $this->json(['error' => ErrorList::E_REQUEST_BODY_INVALID, 'message' => 'invalid body of request'], 400);
         }
 
         try {
@@ -159,22 +158,27 @@ class ItemController extends AbstractController
             $categoryId = $inputJson['category_id'];
             $profileId = $inputJson['profile_id'];
         } catch (\Exception $e) {
-            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'incomplete data '], 400);
+            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'not found title or category_id or profile_id'], 400);
         }
 
         $number = $inputJson['number'] ?? 0;
         $count = $inputJson['count'] ?? 1;
         $comment = $inputJson['comment'] ?? '';
+        $price = $inputJson['price'];
+
+        if(!is_numeric($price) || $price < 0) {
+            $price = null;
+        }
 
 
         $category = $this->getDoctrine()->getRepository(Category::class)->find($categoryId);
         if(!$category) {
-            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'not found category'], 400);
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found category'], 404);
         }
 
         $profile = $this->getDoctrine()->getRepository(Profile::class)->find($profileId);
         if(!$profile) {
-            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'not found profile'], 400);
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found profile'], 404);
         }
 
         $manager = $this->getDoctrine()->getManager();
@@ -187,6 +191,7 @@ class ItemController extends AbstractController
         $item->setNumber($number);
         $item->setCategory($category);
         $item->setProfile($profile);
+        $item->setPrice($price);
 
         $item->setCreatedAt(time());
         $item->setUpdatedAt(time());
@@ -195,8 +200,9 @@ class ItemController extends AbstractController
         $manager->flush();
 
         return $this->json(['id' => $item->getId(), 'number' => $item->getNumber(), 'title' => $item->getTitle(),
-            'comment' => $item->getComment(), 'count' => $item->getCount(), 'profile' =>
-                ['id' => $profile->getId(), 'name' => $profile->getName()]]);
+            'comment' => $item->getComment(), 'count' => $item->getCount(), 'price' => $price, 'profile' =>
+                ['id' => $profile->getId(), 'name' => $profile->getName()], 'category' =>
+                ['id' => $category->getId(), 'name' => $category->getTitle()]]);
     }
 
 

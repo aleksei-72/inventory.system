@@ -23,7 +23,7 @@ class LoginController extends AbstractController
         $inputJson = json_decode($request->getContent(), true);
 
         if(!$inputJson) {
-            return $this->json(['error' => ErrorList::E_REQUEST_BODY_NOT_FOUND, 'message' => 'not found body of request'], 400);
+            return $this->json(['error' => ErrorList::E_REQUEST_BODY_INVALID, 'message' => 'invalid body of request'], 400);
         }
         if(empty($inputJson['username'])) {
             return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'not found username'], 400);
