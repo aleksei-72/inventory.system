@@ -9,7 +9,6 @@ use App\Entity\Item;
 use App\Entity\Profile;
 use App\ErrorList;
 use App\Service\JwtToken;
-use App\UserRoleList;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -137,16 +136,9 @@ class ItemController extends AbstractController
     /**
      * @Route("/items", methods={"POST"})
      * @param Request $request
-     * @param JwtToken $jwt
      * @return JsonResponse
      */
-    public function createItem(Request $request, JwtToken $jwt): JsonResponse {
-
-        if($jwt->get('user_role') == UserRoleList::U_READONLY) {
-            return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'do not have permission'], 403);
-        }
-
-
+    public function createItem(Request $request): JsonResponse {
         $inputJson = json_decode($request->getContent(), true);
 
         if(!$inputJson) {
@@ -208,16 +200,10 @@ class ItemController extends AbstractController
 
     /**
      * @Route("/items/{id}", methods={"DELETE"}, requirements={"id"="\d+"})
-     * @param JwtToken $jwt
      * @param $id
      * @return JsonResponse
      */
-    public function deleteItem(JwtToken $jwt, $id): JsonResponse {
-
-        if($jwt->get('user_role') == UserRoleList::U_READONLY) {
-            return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'do not have permission'], 403);
-        }
-
+    public function deleteItem( $id): JsonResponse {
 
         $item = $this->getDoctrine()->getRepository(Item::class)->find($id);
 

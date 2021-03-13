@@ -24,7 +24,7 @@ class CategoryController extends AbstractController
         $foundCategory = $categoryRepos->findAll();
 
         if(count($foundCategory) === 0) {
-            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'caterogies not found'], 404);
+            return $this->json(['error' => ErrorList::E_INTERNAL_SERVER_ERROR, 'message' => 'categories not found'], 500);
         }
 
         $json = array();

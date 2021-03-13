@@ -7,7 +7,6 @@ use App\Entity\Profile;
 use App\ErrorList;
 use App\Service\JwtToken;
 use App\UserRoleList;
-use http\Env\Response;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -49,16 +48,10 @@ class ProfileController extends AbstractController
     /**
      * @Route("/profiles/{id}", requirements={"id"="\d+"}, methods={"PUT"})
      * @param Request $request
-     * @param JwtToken $jwt
      * @param $id
      * @return JsonResponse
      */
-    public function updateProfile(Request $request, JwtToken $jwt, $id): JsonResponse {
-
-        if($jwt->get('user_role') == UserRoleList::U_READONLY) {
-            return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'do not have permission'], 403);
-        }
-
+    public function updateProfile(Request $request,  $id): JsonResponse {
         $inputJson = json_decode($request->getContent(), true);
 
         if(!$inputJson) {
