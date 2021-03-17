@@ -30,7 +30,7 @@ class Item
     private $comment;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="string", length=255)
      */
     private $count;
 
@@ -105,12 +105,12 @@ class Item
         return $this;
     }
 
-    public function getCount(): ?int
+    public function getCount(): ?string
     {
         return $this->count;
     }
 
-    public function setCount(int $count): self
+    public function setCount(string $count): self
     {
         $this->count = $count;
 

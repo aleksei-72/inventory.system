@@ -78,7 +78,7 @@ class ItemController extends AbstractController
             return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found'], 404);
         }
 
-        $json = ['items' => array()];
+        $json = ['items' => array(), 'total_count' => $totalCount];
 
         foreach($itemsArray as $item) {
             $arr = array();
@@ -129,7 +129,6 @@ class ItemController extends AbstractController
             array_push($json['items'], $arr);
         }
 
-        $json['total_count'] = $totalCount;
         return $this->json($json);
     }
 
@@ -154,9 +153,13 @@ class ItemController extends AbstractController
         }
 
         $number = $inputJson['number'] ?? 0;
-        $count = $inputJson['count'] ?? 1;
+        $count = $inputJson['count'] ?? '1 шт.';
         $comment = $inputJson['comment'] ?? '';
         $price = $inputJson['price'];
+
+        if (!preg_match('/^([0-9]{1,5}\s[а-я]{2,15}(\.?))$/u', $inputJson['count'])) {
+            $count = '1 шт.';
+        }
 
         if(!is_numeric($price) || $price < 0) {
             $price = null;
