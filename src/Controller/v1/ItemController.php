@@ -90,8 +90,15 @@ class ItemController extends AbstractController
             $arr['created_at'] = $item->getCreatedAt();
             $arr['updated_at'] = $item->getUpdatedAt();
             $arr['price'] = $item->getPrice();
-            $arr['category']['id'] = $item->getCategory()->getId();
-            $arr['category']['title'] = $item->getCategory()->getTitle();
+
+            $itemCategory = $item->getCategory();
+
+            if($itemCategory) {
+                $arr['category']['id'] = $itemCategory->getId();
+                $arr['category']['title'] = $itemCategory->getTitle();
+            } else {
+                $arr['category'] = null;
+            }
 
             $itemProfile = $item->getProfile();
 
@@ -138,66 +145,84 @@ class ItemController extends AbstractController
      * @return JsonResponse
      */
     public function createItem(Request $request): JsonResponse {
+
+        $manager = $this->getDoctrine()->getManager();
+
+        $item = new Item();
+
+        $item->setTitle('');
+        $item->setComment('');
+        $item->setCount(0);
+        $item->setNumber(0);
+        $item->setPrice(0);
+
+        $item->setCreatedAt(new \DateTime());
+        $item->setUpdatedAt(new \DateTime());
+
+        $manager->persist($item);
+        $manager->flush();
+
+        return $this->json(['id' => $item->getId()]);
+    }
+
+    /**
+     * @Route("/items/{id}", methods={"PUT"}, requirements={"id"="\d+"})
+     * @param Request $request
+     * @param $id
+     * @return JsonResponse
+     */
+    public function updateItem(Request $request, $id): JsonResponse {
         $inputJson = json_decode($request->getContent(), true);
 
         if(!$inputJson) {
             return $this->json(['error' => ErrorList::E_REQUEST_BODY_INVALID, 'message' => 'invalid body of request'], 400);
         }
 
-        try {
-            $title = $inputJson['title'];
-            $categoryId = $inputJson['category_id'];
-            $profileId = $inputJson['profile_id'];
-        } catch (\Exception $e) {
-            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'not found title or category_id or profile_id'], 400);
-        }
-
-        $number = $inputJson['number'] ?? 0;
-        $count = $inputJson['count'] ?? '1 шт.';
-        $comment = $inputJson['comment'] ?? '';
-        $price = $inputJson['price'];
-
-        if (!preg_match('/^([0-9]{1,5}\s[а-я]{2,15}(\.?))$/u', $inputJson['count'])) {
-            $count = '1 шт.';
-        }
-
-        if(!is_numeric($price) || $price < 0) {
-            $price = null;
-        }
-
-
-        $category = $this->getDoctrine()->getRepository(Category::class)->find($categoryId);
-        if(!$category) {
-            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found category'], 404);
-        }
-
-        $profile = $this->getDoctrine()->getRepository(Profile::class)->find($profileId);
-        if(!$profile) {
-            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found profile'], 404);
-        }
-
         $manager = $this->getDoctrine()->getManager();
+        $item = $this->getDoctrine()->getRepository(Item::class)->find($id);
 
-        $item = new Item();
+        if(!$item) {
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found'], 404);
+        }
 
-        $item->setTitle($title);
-        $item->setComment($comment);
-        $item->setCount($count);
-        $item->setNumber($number);
-        $item->setCategory($category);
-        $item->setProfile($profile);
-        $item->setPrice($price);
+        if(!empty($inputJson['number']) && is_numeric($inputJson['number'])) {
+            $item->setNumber($inputJson['number']);
+        }
 
-        $item->setCreatedAt(time());
-        $item->setUpdatedAt(time());
+        if(!empty($inputJson['price']) && is_numeric($inputJson['price'])) {
+            $item->setPrice($inputJson['price']);
+        }
 
-        $manager->persist($item);
+        if(!empty($inputJson['title'])) {
+            $item->setTitle($inputJson['title']);
+        }
+
+        if(!empty($inputJson['comment'])) {
+            $item->setComment($inputJson['comment']);
+        }
+
+        if(!empty($inputJson['count']) && preg_match('/^(\d+\s\D+)$/u', $inputJson['count'])) {
+            $item->setCount($inputJson['count']);
+        }
+
+        if(!empty($inputJson['profile_id']) && is_numeric($inputJson['profile_id'])) {
+            $profile = $this->getDoctrine()->getRepository(Profile::class)->find($inputJson['profile_id']);
+            if($profile) {
+                $item->setProfile($profile);
+            }
+        }
+
+        if(!empty($inputJson['category_id']) && is_numeric($inputJson['category_id'])) {
+            $category = $this->getDoctrine()->getRepository(Category::class)->find($inputJson['category_id']);
+            if($category) {
+                $item->setCategory($category);
+            }
+        }
+
+        $item->setUpdatedAt(new \DateTime());
         $manager->flush();
 
-        return $this->json(['id' => $item->getId(), 'number' => $item->getNumber(), 'title' => $item->getTitle(),
-            'comment' => $item->getComment(), 'count' => $item->getCount(), 'price' => $price, 'profile' =>
-                ['id' => $profile->getId(), 'name' => $profile->getName()], 'category' =>
-                ['id' => $category->getId(), 'name' => $category->getTitle()]]);
+        return $this->json(null);
     }
 
 

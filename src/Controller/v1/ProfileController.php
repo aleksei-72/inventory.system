@@ -73,4 +73,29 @@ class ProfileController extends AbstractController
 
         return new JsonResponse();
     }
+
+
+    /**
+     * @Route("/profiles", methods={"GET"})
+     * @return JsonResponse
+     */
+    public function getProfileList(): JsonResponse {
+        $profiles = $this->getDoctrine()->getRepository(Profile::class)->findAll();
+
+        if(count($profiles) === 0) {
+            return $this->json(['error' => ErrorList::E_INTERNAL_SERVER_ERROR, 'message' => 'profiles not found'], 500);
+        }
+
+        $json = array();
+
+        foreach ($profiles as $profile) {
+            $arr = array();
+            $arr['id'] = $profile->getId();
+            $arr['name'] = $profile->getName();
+
+            array_push($json, $arr);
+        }
+
+        return $this->json($json);
+    }
 }

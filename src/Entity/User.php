@@ -39,7 +39,7 @@ class User
     private $password;
 
     /**
-     * @ORM\Column(type="integer", options={"default": "extract(epoch from now())"})
+     * @ORM\Column(type="datetime")
      */
     private $createdAt;
 
@@ -106,12 +106,12 @@ class User
         return $this;
     }
 
-    public function getCreatedAt(): ?int
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(int $createdAt): self
+    public function setCreatedAt(\DateTime $createdAt): self
     {
         $this->createdAt = $createdAt;
 

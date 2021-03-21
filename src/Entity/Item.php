@@ -36,7 +36,6 @@ class Item
 
     /**
      * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="items")
-     * @ORM\JoinColumn(nullable=false)
      */
     private $category;
 
@@ -51,12 +50,12 @@ class Item
     private $number;
 
     /**
-     * @ORM\Column(type="integer", options={"default": "extract(epoch from now())"})
+     * @ORM\Column(type="datetime")
      */
     private $createdAt;
 
     /**
-     * @ORM\Column(type="integer", options={"default": "extract(epoch from now())"})
+     * @ORM\Column(type="datetime")
      */
     private $updatedAt;
 
@@ -165,24 +164,24 @@ class Item
         return $this;
     }
 
-    public function getCreatedAt(): ?int
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(int $createdAt): self
+    public function setCreatedAt(\DateTime $createdAt): self
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): ?int
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(int $updatedAt): self
+    public function setUpdatedAt(\DateTime $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
 
