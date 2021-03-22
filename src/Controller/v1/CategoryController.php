@@ -20,19 +20,16 @@ class CategoryController extends AbstractController
      * @return JsonResponse
      */
     public function getList(): JsonResponse {
-        $categoryRepos = $this->getDoctrine()->getRepository(Category::class);
-        $foundCategory = $categoryRepos->findAll();
+        $categories = $this->getDoctrine()->getRepository(Category::class)->findAll();
 
-        if(count($foundCategory) === 0) {
+        if(count($categories) === 0) {
             return $this->json(['error' => ErrorList::E_INTERNAL_SERVER_ERROR, 'message' => 'categories not found'], 500);
         }
 
         $json = array();
-        foreach ($foundCategory as $item) {
-            $category = array('id' => $item->getId(), 'title' => $item->getTitle());
-            array_push($json, $category);
+        foreach ($categories as $category) {
+            array_push($json, array('id' => $category->getId(), 'title' => $category->getTitle()));
         }
-
         return $this->json($json);
     }
 
@@ -57,8 +54,8 @@ class CategoryController extends AbstractController
         $newCategory = new Category();
         $newCategory->setTitle($inputJson['title']);
         $manager->persist($newCategory);
-
         $manager->flush();
+
         return $this->json(['id' => $newCategory->getId(), 'title' => $newCategory->getTitle()]);
     }
 }

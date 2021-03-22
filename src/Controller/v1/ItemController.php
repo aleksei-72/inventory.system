@@ -33,7 +33,7 @@ class ItemController extends AbstractController
             $order = 'desc';
         }
 
-        if(!in_array($orderBy, ['title', 'comment', 'count', 'createdAt', 'updatedAt', 'profile', 'number', 'price'], true)) {
+        if(!in_array(strtolower($orderBy), ['title', 'comment', 'count', 'createdAt', 'updatedAt', 'profile', 'number', 'price'], true)) {
             $orderBy = 'id';
         }
 
@@ -58,14 +58,11 @@ class ItemController extends AbstractController
             }
 
 
-            $categoryRepos = $doctrine->getRepository(Category::class);
-            $findCategory = $categoryRepos->find((int)$categoryId);
+            $findCategory = $doctrine->getRepository(Category::class)->find((int)$categoryId);
 
             if($findCategory) {
                 $findCriteria['category'] = $findCategory;
             }
-
-
         }
 
 
@@ -81,59 +78,7 @@ class ItemController extends AbstractController
         $json = ['items' => array(), 'total_count' => $totalCount];
 
         foreach($itemsArray as $item) {
-            $arr = array();
-            $arr['title'] = $item->getTitle();
-            $arr['comment'] = $item->getComment();
-            $arr['count'] = $item->getCount();
-            $arr['number'] = $item->getNumber();
-            $arr['id'] = $item->getId();
-            $arr['created_at'] = $item->getCreatedAt();
-            $arr['updated_at'] = $item->getUpdatedAt();
-            $arr['price'] = $item->getPrice();
-
-            $itemCategory = $item->getCategory();
-
-            if($itemCategory) {
-                $arr['category']['id'] = $itemCategory->getId();
-                $arr['category']['title'] = $itemCategory->getTitle();
-            } else {
-                $arr['category'] = null;
-            }
-
-            $itemProfile = $item->getProfile();
-
-            if($itemProfile) {
-                $arr['profile']['id'] = $itemProfile->getId();
-                $arr['profile']['name'] = $itemProfile->getName();
-            } else {
-                $arr['profile'] = null;
-            }
-
-            $itemRooms = $item->getRoom();
-
-            if(count($itemRooms) !== 0) {
-
-                $arr['rooms'] = array();
-                foreach ($itemRooms as $room) {
-                    $roomInfo = array();
-
-                    $roomInfo['id'] = $room->getId();
-                    $roomInfo['number'] = $room->getNumber();
-
-                    $itemDepartment = $room->getDepartment();
-
-                    $roomInfo['department']['id'] = $itemDepartment->getId();
-                    $roomInfo['department']['title'] = $itemDepartment->getTitle();
-                    $roomInfo['department']['address'] = $itemDepartment->getAddress();
-
-                    array_push($arr['rooms'], $roomInfo);
-                }
-
-            } else {
-                $arr['rooms'] = null;
-            }
-
-            array_push($json['items'], $arr);
+            array_push($json['items'], $this->getItemJSON($item));
         }
 
         return $this->json($json);
@@ -220,9 +165,10 @@ class ItemController extends AbstractController
         }
 
         $item->setUpdatedAt(new \DateTime());
+
         $manager->flush();
 
-        return $this->json(null);
+        return $this->json($this->getItemJSON($item), 204);
     }
 
 
@@ -243,5 +189,67 @@ class ItemController extends AbstractController
         $manager->flush();
 
         return new JsonResponse();
+    }
+
+
+    /**
+     * @param $item
+     * @return array
+     */
+    private function getItemJSON($item): array {
+
+        $json = array();
+        $json['title'] = $item->getTitle();
+        $json['comment'] = $item->getComment();
+        $json['count'] = $item->getCount();
+        $json['number'] = $item->getNumber();
+        $json['id'] = $item->getId();
+        $json['created_at'] = $item->getCreatedAt();
+        $json['updated_at'] = $item->getUpdatedAt();
+        $json['price'] = $item->getPrice();
+
+        $itemCategory = $item->getCategory();
+
+        if($itemCategory) {
+            $json['category']['id'] = $itemCategory->getId();
+            $json['category']['title'] = $itemCategory->getTitle();
+        } else {
+            $json['category'] = null;
+        }
+
+        $itemProfile = $item->getProfile();
+
+        if($itemProfile) {
+            $json['profile']['id'] = $itemProfile->getId();
+            $json['profile']['name'] = $itemProfile->getName();
+        } else {
+            $json['profile'] = null;
+        }
+
+        $itemRooms = $item->getRoom();
+
+        if(count($itemRooms) !== 0) {
+
+            $json['rooms'] = array();
+            foreach ($itemRooms as $room) {
+                $roomInfo = array();
+
+                $roomInfo['id'] = $room->getId();
+                $roomInfo['number'] = $room->getNumber();
+
+                $itemDepartment = $room->getDepartment();
+
+                $roomInfo['department']['id'] = $itemDepartment->getId();
+                $roomInfo['department']['title'] = $itemDepartment->getTitle();
+                $roomInfo['department']['address'] = $itemDepartment->getAddress();
+
+                array_push($json['rooms'], $roomInfo);
+            }
+
+        } else {
+            $json['rooms'] = null;
+        }
+
+        return $json;
     }
 }

@@ -36,9 +36,7 @@ class LoginController extends AbstractController
         $userName = $inputJson['username'];
         $password = $inputJson['password'];
 
-        $userRepos = $this->getDoctrine()->getRepository(User::class);
-
-        $usersList = $userRepos->findBy(['userName' => $userName]);
+        $usersList = $this->getDoctrine()->getRepository(User::class)->findBy(['userName' => $userName]);
 
         if(count($usersList) !== 1) {
             return $this->json(['error' => ErrorList::E_USER_NOT_FOUND, 'message' => 'user not found'], 404);
