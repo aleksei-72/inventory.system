@@ -27,7 +27,7 @@ class ControllerListener
     public function onKernelController(ControllerEvent $event) {
 
         //404 отдать без проверки токена
-        if(get_class($event->getController()[0]) == 'App\Controller\ErrorController') {
+        if($event->getController()[0]::class === 'App\Controller\ErrorController') {
             return 1;
         }
 

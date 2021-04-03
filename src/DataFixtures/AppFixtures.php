@@ -26,7 +26,7 @@ class AppFixtures extends Fixture
             $user->setPassword(password_hash("P@ssw0rd_$i", PASSWORD_BCRYPT));
             $user->setEmail("user_$i@example.com");
             $user->setRole(UserRoleList::U_USER);
-            $user->setCreatedAt(time());
+            $user->setCreatedAt(new \DateTime());
 
 
 
@@ -36,7 +36,7 @@ class AppFixtures extends Fixture
             $reader->setPassword(password_hash("P@ssw0rd_$i", PASSWORD_BCRYPT));
             $reader->setEmail("reader_$i@example.com");
             $reader->setRole(UserRoleList::U_READONLY);
-            $reader->setCreatedAt(time());
+            $reader->setCreatedAt(new \DateTime());
 
             $manager->persist($user);
             $manager->persist($reader);
@@ -48,7 +48,7 @@ class AppFixtures extends Fixture
         $user->setPassword(password_hash("P@ssw0rd", PASSWORD_BCRYPT));
         $user->setEmail("admin@example.com");
         $user->setRole(UserRoleList::U_ADMIN);
-        $user->setCreatedAt(time());
+        $user->setCreatedAt(new \DateTime());
 
         $manager->persist($user);
 

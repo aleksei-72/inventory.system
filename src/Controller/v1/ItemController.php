@@ -28,22 +28,30 @@ class ItemController extends AbstractController
         $categoryId = $request->query->get('category_id', 0);
         $orderBy = $request->query->get('sort', 'id');
         $order = $request->query->get('order', 'desc');
+        $query = $request->query->get('query', null);
 
-        if(strtolower($order) !== 'asc') {
+        if (strtolower($order) !== 'asc') {
             $order = 'desc';
         }
 
-        if(!in_array(strtolower($orderBy), ['title', 'comment', 'count', 'createdAt', 'updatedAt', 'profile', 'number', 'price'], true)) {
+        if (!in_array($orderBy, ['title', 'comment', 'count', 'createdAt', 'updatedAt', 'profile', 'number', 'price'], true)) {
             $orderBy = 'id';
         }
 
-        if(!is_numeric($limit) || $limit < 0) {
+        if (!is_numeric($limit) || $limit < 0) {
             $limit = 50;
         }
 
 
-        if(!is_numeric($skip) || $skip < 0) {
+        if (!is_numeric($skip) || $skip < 0) {
             $skip = 0;
+        }
+
+        $match = array();
+
+        if ($query) {
+            $match['title'] = $query;
+            $match['comment'] = $query;
         }
 
 
@@ -51,7 +59,7 @@ class ItemController extends AbstractController
 
         $findCriteria = array();
 
-        if($categoryId !== 0) {
+        if ($categoryId !== 0) {
 
             if(!is_numeric($categoryId) || $categoryId < 0) {
                 $categoryId = 0;
@@ -60,19 +68,19 @@ class ItemController extends AbstractController
 
             $findCategory = $doctrine->getRepository(Category::class)->find((int)$categoryId);
 
-            if($findCategory) {
-                $findCriteria['category'] = $findCategory;
+            if ($findCategory) {
+                $findCriteria['category'] = $findCategory->getId();
             }
         }
 
 
         $itemRepos = $doctrine->getRepository(Item::class);
 
-        $itemsArray = $itemRepos->findBy($findCriteria, [$orderBy => $order], (int)$limit, (int)$skip);
-        $totalCount = $itemRepos->count($findCriteria);
+        $itemsArray = $itemRepos->searchByMatch($findCriteria, $match, [$orderBy => $order], (int)$limit, (int)$skip);
+        $totalCount = $itemRepos->countByMatch($findCriteria, $match);
 
-        if(count($itemsArray) === 0) {
-            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found'], 404);
+        if (count($itemsArray) === 0) {
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'items not found'], 404);
         }
 
         $json = ['items' => array(), 'total_count' => $totalCount];
@@ -119,47 +127,47 @@ class ItemController extends AbstractController
     public function updateItem(Request $request, $id): JsonResponse {
         $inputJson = json_decode($request->getContent(), true);
 
-        if(!$inputJson) {
+        if (!$inputJson) {
             return $this->json(['error' => ErrorList::E_REQUEST_BODY_INVALID, 'message' => 'invalid body of request'], 400);
         }
 
         $manager = $this->getDoctrine()->getManager();
         $item = $this->getDoctrine()->getRepository(Item::class)->find($id);
 
-        if(!$item) {
-            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found'], 404);
+        if (!$item) {
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'item not found'], 404);
         }
 
-        if(!empty($inputJson['number']) && is_numeric($inputJson['number'])) {
+        if (!empty($inputJson['number']) && is_numeric($inputJson['number'])) {
             $item->setNumber($inputJson['number']);
         }
 
-        if(!empty($inputJson['price']) && is_numeric($inputJson['price'])) {
+        if (!empty($inputJson['price']) && is_numeric($inputJson['price'])) {
             $item->setPrice($inputJson['price']);
         }
 
-        if(!empty($inputJson['title'])) {
+        if (!empty($inputJson['title'])) {
             $item->setTitle($inputJson['title']);
         }
 
-        if(!empty($inputJson['comment'])) {
+        if (!empty($inputJson['comment'])) {
             $item->setComment($inputJson['comment']);
         }
 
-        if(!empty($inputJson['count']) && preg_match('/^(\d+\s\D+)$/u', $inputJson['count'])) {
+        if (!empty($inputJson['count']) && preg_match('/^(\d+\s\D+)$/u', $inputJson['count'])) {
             $item->setCount($inputJson['count']);
         }
 
-        if(!empty($inputJson['profile_id']) && is_numeric($inputJson['profile_id'])) {
+        if (!empty($inputJson['profile_id']) && is_numeric($inputJson['profile_id'])) {
             $profile = $this->getDoctrine()->getRepository(Profile::class)->find($inputJson['profile_id']);
-            if($profile) {
+            if ($profile) {
                 $item->setProfile($profile);
             }
         }
 
-        if(!empty($inputJson['category_id']) && is_numeric($inputJson['category_id'])) {
+        if (!empty($inputJson['category_id']) && is_numeric($inputJson['category_id'])) {
             $category = $this->getDoctrine()->getRepository(Category::class)->find($inputJson['category_id']);
-            if($category) {
+            if ($category) {
                 $item->setCategory($category);
             }
         }
@@ -168,7 +176,7 @@ class ItemController extends AbstractController
 
         $manager->flush();
 
-        return $this->json($this->getItemJSON($item), 204);
+        return $this->json($this->getItemJSON($item), 200);
     }
 
 
@@ -177,11 +185,11 @@ class ItemController extends AbstractController
      * @param $id
      * @return JsonResponse
      */
-    public function deleteItem( $id): JsonResponse {
+    public function deleteItem($id): JsonResponse {
 
         $item = $this->getDoctrine()->getRepository(Item::class)->find($id);
 
-        if(!$item) {
+        if (!$item) {
             return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found item'], 404);
         }
         $manager = $this->getDoctrine()->getManager();
@@ -210,7 +218,7 @@ class ItemController extends AbstractController
 
         $itemCategory = $item->getCategory();
 
-        if($itemCategory) {
+        if ($itemCategory) {
             $json['category']['id'] = $itemCategory->getId();
             $json['category']['title'] = $itemCategory->getTitle();
         } else {
@@ -219,7 +227,7 @@ class ItemController extends AbstractController
 
         $itemProfile = $item->getProfile();
 
-        if($itemProfile) {
+        if ($itemProfile) {
             $json['profile']['id'] = $itemProfile->getId();
             $json['profile']['name'] = $itemProfile->getName();
         } else {
@@ -228,9 +236,10 @@ class ItemController extends AbstractController
 
         $itemRooms = $item->getRoom();
 
-        if(count($itemRooms) !== 0) {
+        $json['rooms'] = array();
 
-            $json['rooms'] = array();
+        if (count($itemRooms) !== 0) {
+
             foreach ($itemRooms as $room) {
                 $roomInfo = array();
 
@@ -246,10 +255,9 @@ class ItemController extends AbstractController
                 array_push($json['rooms'], $roomInfo);
             }
 
-        } else {
-            $json['rooms'] = null;
         }
 
         return $json;
     }
+
 }
