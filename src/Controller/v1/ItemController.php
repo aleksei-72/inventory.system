@@ -52,6 +52,7 @@ class ItemController extends AbstractController
         if ($query) {
             $match['title'] = $query;
             $match['comment'] = $query;
+            $match['number'] = $query;
         }
 
 
@@ -79,9 +80,6 @@ class ItemController extends AbstractController
         $itemsArray = $itemRepos->searchByMatch($findCriteria, $match, [$orderBy => $order], (int)$limit, (int)$skip);
         $totalCount = $itemRepos->countByMatch($findCriteria, $match);
 
-        if (count($itemsArray) === 0) {
-            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'items not found'], 404);
-        }
 
         $json = ['items' => array(), 'total_count' => $totalCount];
 

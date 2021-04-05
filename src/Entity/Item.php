@@ -45,7 +45,7 @@ class Item
     private $room;
 
     /**
-     * @ORM\Column(type="bigint")
+     * @ORM\Column(type="string")
      */
     private $number;
 
