@@ -9,6 +9,7 @@ use App\Entity\Item;
 use App\Entity\Profile;
 use App\ErrorList;
 use App\Service\JwtToken;
+use App\UserRoleList;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -34,7 +35,7 @@ class ItemController extends AbstractController
             $order = 'desc';
         }
 
-        if (!in_array($orderBy, ['title', 'comment', 'count', 'createdAt', 'updatedAt', 'profile', 'number', 'price'], true)) {
+        if (!in_array($orderBy, ['title', 'comment', 'count', 'createdAt', 'updatedAt', 'profile', 'number', 'price', 'category'], true)) {
             $orderBy = 'id';
         }
 
@@ -47,43 +48,41 @@ class ItemController extends AbstractController
             $skip = 0;
         }
 
-        $match = array();
-
-        if ($query) {
-            $match['title'] = $query;
-            $match['comment'] = $query;
-            $match['number'] = $query;
-        }
-
 
         $doctrine = $this->getDoctrine();
 
-        $findCriteria = array();
 
         if ($categoryId !== 0) {
 
             if(!is_numeric($categoryId) || $categoryId < 0) {
                 $categoryId = 0;
             }
-
-
-            $findCategory = $doctrine->getRepository(Category::class)->find((int)$categoryId);
-
-            if ($findCategory) {
-                $findCriteria['category'] = $findCategory->getId();
-            }
         }
 
 
         $itemRepos = $doctrine->getRepository(Item::class);
 
-        $itemsArray = $itemRepos->searchByMatch($findCriteria, $match, [$orderBy => $order], (int)$limit, (int)$skip);
-        $totalCount = $itemRepos->countByMatch($findCriteria, $match);
+
+        if($query) {
+
+            $items= $itemRepos->findByKeyWord($query, [$orderBy => $order], (int)$limit, (int)$skip);
+        } else {
+
+            if($categoryId !== 0) {
+
+                $items = $itemRepos->findByCategory($categoryId, [$orderBy => $order], (int)$limit, (int)$skip);
+            } else {
+
+                $itemsList = $itemRepos->findBy([], [$orderBy => $order], (int)$limit, (int)$skip);
+                $totalCount = $itemRepos->count([]);
+                $items = ['items' => $itemsList, 'total_count' => $totalCount];
+            }
+        }
 
 
-        $json = ['items' => array(), 'total_count' => $totalCount];
+        $json = ['items' => array(), 'total_count' => $items['total_count']];
 
-        foreach($itemsArray as $item) {
+        foreach($items['items'] as $item) {
             array_push($json['items'], $this->getItemJSON($item));
         }
 
@@ -92,10 +91,13 @@ class ItemController extends AbstractController
 
     /**
      * @Route("/items", methods={"POST"})
-     * @param Request $request
      * @return JsonResponse
      */
-    public function createItem(Request $request): JsonResponse {
+    public function createItem(JwtToken $jwt): JsonResponse {
+
+        if($jwt->get('user_role') == UserRoleList::U_READONLY) {
+            return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'this user is read only'], 403);
+        }
 
         $manager = $this->getDoctrine()->getManager();
 
@@ -122,7 +124,12 @@ class ItemController extends AbstractController
      * @param $id
      * @return JsonResponse
      */
-    public function updateItem(Request $request, $id): JsonResponse {
+    public function updateItem(Request $request, JwtToken $jwt, $id): JsonResponse {
+
+        if($jwt->get('user_role') == UserRoleList::U_READONLY) {
+            return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'this user is read only'], 403);
+        }
+
         $inputJson = json_decode($request->getContent(), true);
 
         if (!$inputJson) {
@@ -183,7 +190,11 @@ class ItemController extends AbstractController
      * @param $id
      * @return JsonResponse
      */
-    public function deleteItem($id): JsonResponse {
+    public function deleteItem(JwtToken $jwt, $id): JsonResponse {
+
+        if($jwt->get('user_role') == UserRoleList::U_READONLY) {
+            return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'this user is read only'], 403);
+        }
 
         $item = $this->getDoctrine()->getRepository(Item::class)->find($id);
 
