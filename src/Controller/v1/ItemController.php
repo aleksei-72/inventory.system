@@ -6,6 +6,7 @@ namespace App\Controller\v1;
 
 use App\Entity\Category;
 use App\Entity\Item;
+use App\Entity\Room;
 use App\Entity\Profile;
 use App\ErrorList;
 use App\Service\JwtToken;
@@ -169,6 +170,59 @@ class ItemController extends AbstractController
                 $item->setCategory($category);
             }
         }
+
+        if (!empty($inputJson['room_id']) && is_array($inputJson['room_id'])) {
+            $item->removeAllRoom();
+            $roomRepos = $this->getDoctrine()->getRepository(Room::class);
+
+            foreach ($inputJson['room_id'] as $newRoomId) {
+                $room = $roomRepos->find($newRoomId);
+
+                if ($room) {
+                    $item->AddRoom($room);
+                }
+            }
+        }
+
+
+
+        if (!empty($inputJson['category_string'])) {
+            $categoryList = $this->getDoctrine()->getRepository(Category::class)->findAll();
+
+            foreach ($categoryList as $category) {
+                if (str_contains(mb_strtolower($category->getTitle()), mb_strtolower($inputJson['category_string']))) {
+                    $item->setCategory($category);
+                    break;
+                }
+            }
+        }
+
+        if (!empty($inputJson['profile_string'])) {
+            $profileList = $this->getDoctrine()->getRepository(Profile::class)->findAll();
+
+            foreach ($profileList as $profile) {
+                if (str_contains(mb_strtolower($profile->getName()), mb_strtolower($inputJson['profile_string']))) {
+                    $item->setProfile($profile);
+                    break;
+                }
+            }
+        }
+
+        if (!empty($inputJson['room_string'])) {
+            $item->removeAllRoom();
+
+            $roomList = $this->getDoctrine()->getRepository(Room::class)->findAll();
+
+            foreach ($inputJson['room_string'] as $newRoomTitle) {
+                foreach ($roomList as $room) {
+                    if (str_contains(mb_strtolower($room->getNumber()), mb_strtolower($newRoomTitle))) {
+                        $item->addRoom($room);
+                        break;
+                    }
+                }
+            }
+        }
+
 
         $item->setUpdatedAt(new \DateTime());
 

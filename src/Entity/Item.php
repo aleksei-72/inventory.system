@@ -152,6 +152,17 @@ class Item
         return $this;
     }
 
+    public function removeAllRoom(): self
+    {
+        $rooms = $this->getRoom();
+
+        foreach ($rooms as $room) {
+            $this->room->removeElement($room);
+        }
+
+        return $this;
+    }
+
     public function getNumber(): ?string
     {
         return $this->number;
