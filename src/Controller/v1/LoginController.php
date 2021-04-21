@@ -76,11 +76,8 @@ class LoginController extends AbstractController
      * @return JsonResponse
      */
     public function aboutMe( JwtToken $jwt): JsonResponse {
-
         $userRepos = $this->getDoctrine()->getRepository(User::class);
-
         $usersList = $userRepos->findBy(['id' => $jwt->get('user_id')]);
-
 
         $user = $usersList[0];
 

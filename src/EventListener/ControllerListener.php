@@ -15,7 +15,9 @@ use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 class ControllerListener
 {
-    private $routesWithoutAuthorization = array('/auth');
+    private $routesWithoutAuthorization = [
+        array('method'=> 'POST', 'url' => '/auth')
+    ];
     private $container;
 
 
@@ -31,10 +33,26 @@ class ControllerListener
             return 1;
         }
 
+
         $request = $event->getRequest();
 
+        //Часть маршрутов доступна без авторизации
+        foreach ($this->routesWithoutAuthorization as $route) {
+            if($request->getPathInfo() == $route['url'] && $request->getMethod() == $route['method']) {
+                return 0;
+            }
+        }
 
-        if($request->headers->has('Authorization')) {
+        if(!$request->headers->has('Authorization')) {
+
+            $event->setController(function () {
+                return new JsonResponse(['error' => ErrorList::E_UNAUTHORIZED,
+                    'message' => 'not found Authorization header'], 401);
+            });
+
+            return 1;
+
+        } else {
 
             $jwt = null;
 
@@ -42,20 +60,16 @@ class ControllerListener
                 $jwt = new JwtToken();
                 $header = $request->headers->get('Authorization');
 
-
                 if(!str_starts_with($header, 'Bearer ')) {
                     $event->setController(function () {
                         return new JsonResponse(['error' => ErrorList::E_TOKEN_INVALID,
-                            'message' => 'loss \'Bearer\' in header Authorization'], 401);
+                            'message' => 'invalid token'], 401);
                     });
-
                     return 1;
                 }
 
                 $header = substr($header, strlen('Bearer '));
                 $jwt->createFromHeader($header);
-
-                JwtToken::$initPayLoad = $jwt->getPayload();
             }
 
             catch (ExpiredException $e) {
@@ -69,12 +83,10 @@ class ControllerListener
             catch (\Exception $e) {
                 $event->setController(function () {
                     return new JsonResponse(['error' => ErrorList::E_TOKEN_INVALID,
-                    'message' => 'invalid token'], 401);
+                        'message' => 'invalid token'], 401);
                 });
                 return 1;
             }
-
-
 
             $userRepos = $this->container->get('doctrine')->getManager()->getRepository(User::class);
             $user = $userRepos->find($jwt->get('user_id'));
@@ -87,7 +99,6 @@ class ControllerListener
                 return 1;
             }
 
-
             if($user->getIsBlocked()) {
                 $event->setController(function () {
                     return new JsonResponse(['error' => ErrorList::E_USER_BLOCKED,
@@ -95,7 +106,6 @@ class ControllerListener
                 });
                 return 1;
             }
-
 
             if($user->getRole() !== $jwt->get('user_role')) {
                 $event->setController(function () {
@@ -106,28 +116,11 @@ class ControllerListener
             }
 
 
-            if($jwt->get('user_role') === UserRoleList::U_READONLY && $request->getMethod() !== "GET") {
+            if($jwt->get('user_role') === UserRoleList::U_READONLY && $request->getMethod() !== 'GET') {
                 $event->setController(function () {
                     return new JsonResponse(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'this user is readonly'], 403);
                 });
             }
-
-
-        } else {
-
-            //Часть маршрутов доступна без авторизации
-            foreach ($this->routesWithoutAuthorization as $route) {
-                if($request->getPathInfo() == $route) {
-                    return 0;
-                }
-            }
-
-
-            $event->setController(function () {
-                return new JsonResponse(['error' => ErrorList::E_UNAUTHORIZED,
-                    'message' => 'not found Authorization header'], 401);
-            });
-            return 1;
         }
         return 0;
     }

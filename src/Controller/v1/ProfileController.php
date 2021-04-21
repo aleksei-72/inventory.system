@@ -22,10 +22,6 @@ class ProfileController extends AbstractController
      */
     public function createProfile(Request $request, JwtToken $jwt): JsonResponse {
 
-        if($jwt->get('user_role') == UserRoleList::U_READONLY) {
-            return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'this user is read only'], 403);
-        }
-
         $inputJson = json_decode($request->getContent(), true);
 
         if(!$inputJson) {
