@@ -9,7 +9,6 @@ use App\Entity\Item;
 use App\Entity\Room;
 use App\Entity\Profile;
 use App\ErrorList;
-use App\Service\JwtToken;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,6 +16,48 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ItemController extends AbstractController
 {
+
+    /**
+     * @Route("/items", methods={"POST"})
+     * @return JsonResponse
+     */
+    public function createItem(): JsonResponse {
+
+        $manager = $this->getDoctrine()->getManager();
+
+        $item = new Item();
+
+        $item->setTitle('');
+        $item->setComment('');
+        $item->setCount(0);
+        $item->setNumber(0);
+        $item->setPrice(0);
+
+        $item->setCreatedAt(new \DateTime());
+        $item->setUpdatedAt(new \DateTime());
+
+        $manager->persist($item);
+        $manager->flush();
+
+        return $this->json(['id' => $item->getId()]);
+    }
+
+    /**
+     * @Route("/items/{id}", methods={"GET"}, requirements={"id"="\d+"})
+     * @param $id
+     * @return JsonResponse
+     */
+    public function getItem($id): JsonResponse {
+
+        $item = $this->getDoctrine()->getRepository(Item::class)->find($id);
+
+        if(!$item) {
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'item not found'], 404);
+        }
+
+        return $this->json($item->toJSON());
+    }
+
     /**
      * @Route("/items", methods={"GET"})
      * @param Request $request
@@ -85,36 +126,10 @@ class ItemController extends AbstractController
         $json = ['items' => array(), 'total_count' => $totalCount];
 
         foreach($itemsArray as $item) {
-            array_push($json['items'], $this->getItemJSON($item));
+            array_push($json['items'], $item->toJSON());
         }
 
         return $this->json($json);
-    }
-
-    /**
-     * @Route("/items", methods={"POST"})
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function createItem(Request $request): JsonResponse {
-
-        $manager = $this->getDoctrine()->getManager();
-
-        $item = new Item();
-
-        $item->setTitle('');
-        $item->setComment('');
-        $item->setCount(0);
-        $item->setNumber(0);
-        $item->setPrice(0);
-
-        $item->setCreatedAt(new \DateTime());
-        $item->setUpdatedAt(new \DateTime());
-
-        $manager->persist($item);
-        $manager->flush();
-
-        return $this->json(['id' => $item->getId()]);
     }
 
     /**
@@ -228,9 +243,8 @@ class ItemController extends AbstractController
 
         $manager->flush();
 
-        return $this->json($this->getItemJSON($item), 200);
+        return $this->json($item->toJSON());
     }
-
 
     /**
      * @Route("/items/{id}", methods={"DELETE"}, requirements={"id"="\d+"})
@@ -248,68 +262,7 @@ class ItemController extends AbstractController
         $manager->remove($item);
         $manager->flush();
 
-        return new JsonResponse();
-    }
-
-
-    /**
-     * @param $item
-     * @return array
-     */
-    private function getItemJSON($item): array {
-
-        $json = array();
-        $json['title'] = $item->getTitle();
-        $json['comment'] = $item->getComment();
-        $json['count'] = $item->getCount();
-        $json['number'] = $item->getNumber();
-        $json['id'] = $item->getId();
-        $json['created_at'] = $item->getCreatedAt();
-        $json['updated_at'] = $item->getUpdatedAt();
-        $json['price'] = $item->getPrice();
-
-        $itemCategory = $item->getCategory();
-
-        if ($itemCategory) {
-            $json['category']['id'] = $itemCategory->getId();
-            $json['category']['title'] = $itemCategory->getTitle();
-        } else {
-            $json['category'] = null;
-        }
-
-        $itemProfile = $item->getProfile();
-
-        if ($itemProfile) {
-            $json['profile']['id'] = $itemProfile->getId();
-            $json['profile']['name'] = $itemProfile->getName();
-        } else {
-            $json['profile'] = null;
-        }
-
-        $itemRooms = $item->getRoom();
-
-        $json['rooms'] = array();
-
-        if (count($itemRooms) !== 0) {
-
-            foreach ($itemRooms as $room) {
-                $roomInfo = array();
-
-                $roomInfo['id'] = $room->getId();
-                $roomInfo['number'] = $room->getNumber();
-
-                $itemDepartment = $room->getDepartment();
-
-                $roomInfo['department']['id'] = $itemDepartment->getId();
-                $roomInfo['department']['title'] = $itemDepartment->getTitle();
-                $roomInfo['department']['address'] = $itemDepartment->getAddress();
-
-                array_push($json['rooms'], $roomInfo);
-            }
-
-        }
-
-        return $json;
+        return $this->json(null, 204);
     }
 
 }

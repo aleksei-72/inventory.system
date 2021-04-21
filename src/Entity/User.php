@@ -141,4 +141,20 @@ class User
 
         return $this;
     }
+
+
+    /**
+     * @return array
+     */
+    public function toJSON(): array {
+        $json = array();
+        $json['id'] = $this->getId();
+        $json['name'] = $this->getName();
+        $json['username'] = $this->getUserName();
+        $json['email'] = $this->getEmail();
+        $json['created_at'] = $this->getCreatedAt();
+        $json['role'] = $this->getRole();
+
+        return $json;
+    }
 }

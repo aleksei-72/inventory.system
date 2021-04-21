@@ -14,6 +14,21 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class CategoryController extends AbstractController
 {
+    /**
+     * @Route("/categories", methods={"POST"})
+     * @return JsonResponse
+     */
+    public function createCategory(): JsonResponse {
+        $manager = $this->getDoctrine()->getManager();
+
+        $category = new Category();
+        $category->setTitle('');
+        $manager->persist($category);
+        $manager->flush();
+
+        return $this->json($this->$category->toJSON());
+    }
+
 
     /**
      * @Route("/categories", methods={"GET"})
@@ -28,34 +43,41 @@ class CategoryController extends AbstractController
 
         $json = array();
         foreach ($categories as $category) {
-            array_push($json, array('id' => $category->getId(), 'title' => $category->getTitle()));
+            array_push($json, $category->toJSON());
         }
         return $this->json($json);
     }
 
     /**
-     * @Route("/categories", methods={"POST"})
+     * @Route("/categories/{id}", requirements={"id"="\d+"}, methods={"PUT"})
      * @param Request $request
+     * @param $id
      * @return JsonResponse
      */
-    public function createCategory(Request $request): JsonResponse {
+    public function updateCategory(Request $request,  $id): JsonResponse {
         $inputJson = json_decode($request->getContent(), true);
 
         if(!$inputJson) {
             return $this->json(['error' => ErrorList::E_REQUEST_BODY_INVALID, 'message' => 'invalid body of request'], 400);
         }
 
-        if(empty($inputJson['title'])) {
-            return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'not found title of category'], 400);
+        $manager = $this->getDoctrine()->getManager();
+        $category = $this->getDoctrine()->getRepository(Category::class)->find($id);
+
+        if(!$category) {
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'category not found'], 404);
         }
 
-        $manager = $this->getDoctrine()->getManager();
+        if(!empty($inputJson['title'])) {
+            $category->setTitle($inputJson['title']);
+        }
 
-        $newCategory = new Category();
-        $newCategory->setTitle($inputJson['title']);
-        $manager->persist($newCategory);
         $manager->flush();
 
-        return $this->json(['id' => $newCategory->getId(), 'title' => $newCategory->getTitle()]);
+        return $this->json($this->$category->toJSON());
     }
+
+
+
+
 }

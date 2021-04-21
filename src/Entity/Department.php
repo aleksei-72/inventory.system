@@ -97,4 +97,17 @@ class Department
 
         return $this;
     }
+
+
+    /**
+     * @return array
+     */
+    public function toJSON(): array {
+        $json = array();
+        $json['id'] = $this->getId();
+        $json['title'] = $this->getTitle();
+        $json['address'] = $this->getAddress();
+
+        return $json;
+    }
 }

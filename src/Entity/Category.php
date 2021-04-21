@@ -133,4 +133,16 @@ class Category
 
         return $this;
     }
+
+
+    /**
+     * @return array
+     */
+    public function toJSON(): array {
+        $json = array();
+        $json['id'] = $this->getId();
+        $json['title'] = $this->getTitle();
+
+        return $json;
+    }
 }

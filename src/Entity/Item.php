@@ -223,4 +223,51 @@ class Item
         return $this;
     }
 
+
+    /**
+     * @return array
+     */
+    public function toJSON(): array {
+
+        $json = array();
+        $json['title'] = $this->getTitle();
+        $json['comment'] = $this->getComment();
+        $json['count'] = $this->getCount();
+        $json['number'] = $this->getNumber();
+        $json['id'] = $this->getId();
+        $json['created_at'] = $this->getCreatedAt();
+        $json['updated_at'] = $this->getUpdatedAt();
+        $json['price'] = $this->getPrice();
+
+        $itemCategory = $this->getCategory();
+
+        if ($itemCategory) {
+            $json['category'] = $itemCategory->toJSON();
+        } else {
+            $json['category'] = null;
+        }
+
+        $itemProfile = $this->getProfile();
+
+        if ($itemProfile) {
+            $json['profile'] = $itemProfile->toJSON();
+        } else {
+            $json['profile'] = null;
+        }
+
+        $itemRooms = $this->getRoom();
+
+        $json['rooms'] = array();
+
+        if (count($itemRooms) !== 0) {
+
+            foreach ($itemRooms as $room) {
+                array_push($json['rooms'], $room->toJSON());
+            }
+
+        }
+
+        return $json;
+    }
+
 }

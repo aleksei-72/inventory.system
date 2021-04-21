@@ -95,4 +95,18 @@ class Room
 
         return $this;
     }
+
+
+    /**
+     * @return array
+     */
+    public function toJSON(): array {
+        $json = array();
+        $json['id'] = $this->getId();
+        $json['number'] = $this->getNumber();
+
+        $json['department'] = $this->getDepartment()->toJSON();
+
+        return $json;
+    }
 }

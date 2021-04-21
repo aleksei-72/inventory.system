@@ -80,4 +80,15 @@ class Profile
 
         return $this;
     }
+
+    /**
+     * @return array
+     */
+    public function toJSON(): array {
+        $json = array();
+        $json['id'] = $this->getId();
+        $json['name'] = $this->getName();
+
+        return $json;
+    }
 }
