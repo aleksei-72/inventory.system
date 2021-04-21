@@ -15,9 +15,16 @@ use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 class ControllerListener
 {
+
     private $routesWithoutAuthorization = [
         array('method'=> 'POST', 'url' => '/auth')
     ];
+
+    //ReadOnly юзер может делать любые GET запросы и запросы из этого списка
+    private $routesAllowedForReadOnlyUsers = [
+        array('method'=> 'POST', 'url' => '/token')
+    ];
+
     private $container;
 
 
@@ -117,6 +124,14 @@ class ControllerListener
 
 
             if($jwt->get('user_role') === UserRoleList::U_READONLY && $request->getMethod() !== 'GET') {
+
+                //Маршруты, разрешенные для ReadOnly юзеров
+                foreach ($this->routesAllowedForReadOnlyUsers as $route) {
+                    if($request->getPathInfo() == $route['url'] && $request->getMethod() == $route['method']) {
+                        return 0;
+                    }
+                }
+
                 $event->setController(function () {
                     return new JsonResponse(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'this user is readonly'], 403);
                 });
