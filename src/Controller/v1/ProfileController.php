@@ -33,7 +33,7 @@ class ProfileController extends AbstractController
      * @return JsonResponse
      */
     public function getProfileList(): JsonResponse {
-        $profiles = $this->getDoctrine()->getRepository(Profile::class)->findAll();
+        $profiles = $this->getDoctrine()->getRepository(Profile::class)->findBy([],['id' => 'ASC']);
 
         if(count($profiles) === 0) {
             return $this->json(['error' => ErrorList::E_INTERNAL_SERVER_ERROR, 'message' => 'profiles not found'], 500);

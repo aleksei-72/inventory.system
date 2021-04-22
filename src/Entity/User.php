@@ -154,6 +154,7 @@ class User
         $json['email'] = $this->getEmail();
         $json['created_at'] = $this->getCreatedAt();
         $json['role'] = $this->getRole();
+        $json['blocked'] = $this->getIsBlocked();
 
         return $json;
     }

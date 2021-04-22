@@ -18,7 +18,7 @@ class DepartmentController extends AbstractController
      * @return JsonResponse
      */
     public function getDepartmentsList(): JsonResponse {
-        $departments = $this->getDoctrine()->getRepository(Department::class)->findAll();
+        $departments = $this->getDoctrine()->getRepository(Department::class)->findBy([],['id' => 'ASC']);
 
         if(count($departments) === 0) {
             return $this->json(['error' => ErrorList::E_INTERNAL_SERVER_ERROR, 'message' => 'departments not found'], 500);
