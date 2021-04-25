@@ -53,6 +53,11 @@ class User
      */
     private $isBlocked = false;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $lastActiveAt;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -142,6 +147,17 @@ class User
         return $this;
     }
 
+    public function getLastActiveAt(): ?\DateTimeInterface
+    {
+        return $this->lastActiveAt;
+    }
+
+    public function setLastActiveAt(?\DateTimeInterface $lastActiveAt): self
+    {
+        $this->lastActiveAt = $lastActiveAt;
+
+        return $this;
+    }
 
     /**
      * @return array
@@ -155,6 +171,7 @@ class User
         $json['created_at'] = $this->getCreatedAt();
         $json['role'] = $this->getRole();
         $json['blocked'] = $this->getIsBlocked();
+        $json['lastActiveAt'] = $this->getLastActiveAt();
 
         return $json;
     }

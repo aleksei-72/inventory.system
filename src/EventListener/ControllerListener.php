@@ -95,7 +95,8 @@ class ControllerListener
                 return 1;
             }
 
-            $userRepos = $this->container->get('doctrine')->getManager()->getRepository(User::class);
+            $doctrine = $this->container->get('doctrine');
+            $userRepos = $doctrine->getManager()->getRepository(User::class);
             $user = $userRepos->find($jwt->get('user_id'));
 
             if(!$user) {
@@ -122,6 +123,9 @@ class ControllerListener
                 return 1;
             }
 
+
+            $user->setLastActiveAt(new \DateTime());
+            $doctrine->getManager()->flush();
 
             if($jwt->get('user_role') === UserRoleList::U_READONLY && $request->getMethod() !== 'GET') {
 
