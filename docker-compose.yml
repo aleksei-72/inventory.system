@@ -13,7 +13,7 @@ services:
       - gateway_network
 
   php:
-    image: php:fpm-alpine
+    build: .
     volumes:
       - ./:/var/www/html
     expose:
