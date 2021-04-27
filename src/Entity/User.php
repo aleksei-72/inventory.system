@@ -9,8 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @ORM\Table(name="`user`")
  */
-class User
-{
+class User {
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -58,102 +57,85 @@ class User
      */
     private $lastActiveAt;
 
-    public function getId(): ?int
-    {
+    public function getId(): ?int {
         return $this->id;
     }
 
-    public function getName(): ?string
-    {
+    public function getName(): ?string {
         return $this->name;
     }
 
-    public function setName(string $name): self
-    {
+    public function setName(string $name): self {
         $this->name = $name;
 
         return $this;
     }
 
-    public function getUserName(): ?string
-    {
+    public function getUserName(): ?string {
         return $this->userName;
     }
 
-    public function setUserName(string $userName): self
-    {
+    public function setUserName(string $userName): self {
         $this->userName = $userName;
 
         return $this;
     }
 
-    public function getEmail(): ?string
-    {
+    public function getEmail(): ?string {
         return $this->email;
     }
 
-    public function setEmail(?string $email): self
-    {
+    public function setEmail(?string $email): self {
         $this->email = $email;
 
         return $this;
     }
 
-    public function getPassword(): ?string
-    {
+    public function getPassword(): ?string {
         return $this->password;
     }
 
-    public function setPassword(string $password): self
-    {
+    public function setPassword(string $password): self {
         $this->password = $password;
 
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
-    {
+    public function getCreatedAt(): ?\DateTime {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt): self
-    {
+    public function setCreatedAt(\DateTime $createdAt): self {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getRole(): ?string
-    {
+    public function getRole(): ?string {
         return $this->role;
     }
 
-    public function setRole(string $role): self
-    {
+    public function setRole(string $role): self {
         $this->role = $role;
 
         return $this;
     }
 
-    public function getIsBlocked(): ?bool
-    {
+    public function getIsBlocked(): ?bool {
         return $this->isBlocked;
     }
 
-    public function setIsBlocked(bool $isBlocked): self
-    {
+    public function setIsBlocked(bool $isBlocked): self {
         $this->isBlocked = $isBlocked;
 
         return $this;
     }
 
-    public function getLastActiveAt(): ?\DateTimeInterface
-    {
+    public function getLastActiveAt(): ?\DateTimeInterface {
         return $this->lastActiveAt;
     }
 
-    public function setLastActiveAt(?\DateTimeInterface $lastActiveAt): self
-    {
+    public function setLastActiveAt(?\DateTimeInterface $lastActiveAt): self {
         $this->lastActiveAt = $lastActiveAt;
 
         return $this;

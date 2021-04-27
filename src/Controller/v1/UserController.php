@@ -22,7 +22,7 @@ class UserController extends AbstractController
      */
     public function createUser(JwtToken $jwt): JsonResponse {
 
-        if($jwt->get('user_role') !== UserRoleList::U_ADMIN) {
+        if ($jwt->get('user_role') !== UserRoleList::U_ADMIN) {
             return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'only the administrator can create new users'], 403);
         }
 
@@ -37,11 +37,11 @@ class UserController extends AbstractController
 
             $userName = "user_$i";
 
-            if($manager->getRepository(User::class)->count(['userName' => $userName]) === 0) {
+            if ($manager->getRepository(User::class)->count(['userName' => $userName]) === 0) {
                 break;
             }
 
-            if($i > 4999) {
+            if ($i > 4999) {
                 return $this->json(['error' => ErrorList::E_INTERNAL_SERVER_ERROR, 'message' => 'not found free username'], 500);
             }
 
@@ -68,7 +68,7 @@ class UserController extends AbstractController
     public function getUsersList(): JsonResponse {
         $users = $this->getDoctrine()->getRepository(User::class)->findBy([],['id' => 'ASC']);
 
-        if(count($users) === 0) {
+        if (count($users) === 0) {
             return $this->json(['error' => ErrorList::E_INTERNAL_SERVER_ERROR, 'message' => 'users not found'], 500);
         }
 
@@ -108,12 +108,12 @@ class UserController extends AbstractController
         $isSelf = $jwt->get('user_id') === (integer)$id;
 
 
-        if(!$isSelf && !$isAdmin) {
+        if (!$isSelf && !$isAdmin) {
             return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'This user is not an administrator. Simple users can update only himself'], 403);
         }
 
 
-        if($isAdmin || $isSelf) {
+        if ($isAdmin || $isSelf) {
 
             if (isset($inputJson['name'])) {
 
@@ -173,9 +173,9 @@ class UserController extends AbstractController
 
 
 
-        if(isset($inputJson['role'])) {
+        if (isset($inputJson['role'])) {
 
-            if($isSelf) {
+            if ($isSelf) {
                 return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'you can\'t change the role of yourself'], 403);
             }
 
@@ -188,17 +188,17 @@ class UserController extends AbstractController
         }
 
 
-        if(isset($inputJson['blocked'])) {
+        if (isset($inputJson['blocked'])) {
 
-            if(!$isAdmin) {
+            if (!$isAdmin) {
                 return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'only the administrator can block or unblock users'], 403);
             }
 
-            if($isSelf) {
+            if ($isSelf) {
                 return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'you can\'t block or unblock youself'], 403);
             }
 
-            if(!is_bool($inputJson['blocked'])) {
+            if (!is_bool($inputJson['blocked'])) {
                 return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'invalid value of blocked'], 403);
             }
 

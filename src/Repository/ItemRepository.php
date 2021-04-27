@@ -4,9 +4,6 @@ namespace App\Repository;
 
 use App\Entity\Item;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Collections\Criteria;
-use Doctrine\Common\Collections\ExpressionBuilder;
-use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -17,57 +14,85 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ItemRepository extends ServiceEntityRepository
 {
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Item::class);
     }
 
-    public function searchByMatch(array $criteria, array $match, array $order, int $limit, int $offset) {
-        $orderField = array_keys($order)[0] ?? 'id';
+    public function findByCategory(int $category, array $order, int $limit, int $offset): array {
+        $sort = array_keys($order)[0];
 
-        $query = $this->createSearchByMatchQuery($criteria, $match)
-            ->orderBy("i.$orderField", $order[$orderField] ?? 'asc')
+
+        $where = '(c.id = :category)';
+
+        $dql = "SELECT i FROM App\Entity\Item i JOIN i.category c " .
+            "WHERE $where ORDER BY i.$sort ${order[$sort]}";
+
+        $query = $this->getEntityManager()->createQuery($dql)
             ->setMaxResults($limit)
-            ->setFirstResult($offset);
+            ->setFirstResult($offset)
+            ->setParameter('category', $category);
 
-        return $query->getQuery()->getResult();
+
+        $dqlForTotalCount = "SELECT count(i.id) FROM App\Entity\Item i JOIN i.category c " .
+            "WHERE $where";
+
+        $queryTotalCount = $this->getEntityManager()->createQuery($dqlForTotalCount)
+            ->setParameter('category', $category);
+
+        return ['items' => $query->getResult(), 'total_count' => $queryTotalCount->getResult()[0][1]];
     }
 
-    public function countByMatch(array $criteria, array $match) {
+    public function findByKeyWord(string $match, array $order, int $limit, int $offset): array {
+        $sort = array_keys($order)[0];
+        $match = strtolower($match);
 
-        $query = $this->createSearchByMatchQuery($criteria, $match)
-            ->select('count(i.id)');
+        $queryWords = explode(' ', $match);
+        $queryParams = array();
 
-        return $query->getQuery()->getResult()[0][1];
+
+        $where = '';
+
+
+        $firstExp = true;
+        for ($i = 0; $i < count($queryWords); $i ++) {
+            $word = $queryWords[$i];
+
+            if (strlen($word) === 0) {
+                continue;
+            }
+
+            $newExp = "(lower(i.title) LIKE :match_$i OR lower(i.comment) LIKE :match_$i OR " .
+                "lower(i.number) LIKE :match_$i OR lower(c.title) LIKE :match_$i)";
+
+            if ($firstExp) {
+                $firstExp = false;
+                $where .= $newExp;
+            } else {
+                $where .= ' AND ' . $newExp;
+            }
+
+            $queryParams["match_$i"] = '%' . mb_strtolower($word) . '%';
+        }
+        $dql = "SELECT i FROM App\Entity\Item i JOIN i.category c " .
+            "WHERE $where ORDER BY i.$sort ${order[$sort]}";
+
+        $query = $this->getEntityManager()->createQuery($dql)
+            ->setMaxResults($limit)
+            ->setFirstResult($offset)
+            ->setParameters($queryParams);
+
+
+        $sqlForTotalCount = "SELECT count(i.id) FROM App\Entity\Item i JOIN i.category c " .
+            "WHERE $where";
+
+        $queryTotalCount = $this->getEntityManager()->createQuery($sqlForTotalCount)
+            ->setParameters($queryParams);
+
+        return ['items' => $query->getResult(), 'total_count' => $queryTotalCount->getResult()[0][1]];
     }
 
-
-
-    private function createSearchByMatchQuery(array $equal, array $match): QueryBuilder {
-
-        $query = $this->createQueryBuilder('i');
-
-        //(field1 = eq1 AND field2 = eq2 AND field3 = eq3) AND (field1 like %like1% OR field2 like %like2%)
-
-        $equalExpressions = array();
-        foreach ($equal as $key => $value) {
-            array_push($equalExpressions, $query->expr()->eq("i.$key", $value));
-        }
-
-        $matchExpressions = array();
-        foreach ($match as $key => $value) {
-            array_push($matchExpressions, $query->expr()->like("i.$key", '\'%' . $value . '%\''));
-        }
-
-        $equalExp = call_user_func_array([$query->expr(), 'andX'], $equalExpressions);
-        $matchExp = call_user_func_array([$query->expr(), 'orX'], $matchExpressions);
-
-        if ((count($equal) + count($match)) !== 0) {
-            $query->where($query->expr()->andX($equalExp, $matchExp));
-        }
-
-        return $query;
-    }
 
     // /**
     //  * @return Item[] Returns an array of Item objects

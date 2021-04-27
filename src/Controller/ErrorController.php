@@ -18,8 +18,8 @@ class ErrorController extends AbstractController
 
         $error = ErrorList::E_INTERNAL_SERVER_ERROR;
 
-        if($code === 0) {
-            if(str_starts_with($message, 'No route found for')) {
+        if ($code === 0) {
+            if (str_starts_with($message, 'No route found for')) {
                 $error = ErrorList::E_NOT_FOUND;
                 $code = 404;
             } else {

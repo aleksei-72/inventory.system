@@ -10,8 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=ItemRepository::class)
  */
-class Item
-{
+class Item {
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -70,59 +69,49 @@ class Item
     private $price;
 
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->room = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
+    public function getId(): ?int {
         return $this->id;
     }
 
-    public function getTitle(): ?string
-    {
+    public function getTitle(): ?string {
         return $this->title;
     }
 
-    public function setTitle(string $title): self
-    {
+    public function setTitle(string $title): self {
         $this->title = $title;
 
         return $this;
     }
 
-    public function getComment(): ?string
-    {
+    public function getComment(): ?string {
         return $this->comment;
     }
 
-    public function setComment(?string $comment): self
-    {
+    public function setComment(?string $comment): self {
         $this->comment = $comment;
 
         return $this;
     }
 
-    public function getCount(): ?string
-    {
+    public function getCount(): ?string {
         return $this->count;
     }
 
-    public function setCount(string $count): self
-    {
+    public function setCount(string $count): self {
         $this->count = $count;
 
         return $this;
     }
 
-    public function getCategory(): ?Category
-    {
+    public function getCategory(): ?Category {
         return $this->category;
     }
 
-    public function setCategory(?Category $category): self
-    {
+    public function setCategory(?Category $category): self {
         $this->category = $category;
 
         return $this;
@@ -131,13 +120,11 @@ class Item
     /**
      * @return Collection|Room[]
      */
-    public function getRoom(): Collection
-    {
+    public function getRoom(): Collection {
         return $this->room;
     }
 
-    public function addRoom(Room $room): self
-    {
+    public function addRoom(Room $room): self {
         if (!$this->room->contains($room)) {
             $this->room[] = $room;
         }
@@ -145,15 +132,13 @@ class Item
         return $this;
     }
 
-    public function removeRoom(Room $room): self
-    {
+    public function removeRoom(Room $room): self {
         $this->room->removeElement($room);
 
         return $this;
     }
 
-    public function removeAllRoom(): self
-    {
+    public function removeAllRoom(): self {
         $rooms = $this->getRoom();
 
         foreach ($rooms as $room) {
@@ -163,61 +148,51 @@ class Item
         return $this;
     }
 
-    public function getNumber(): ?string
-    {
+    public function getNumber(): ?string {
         return $this->number;
     }
 
-    public function setNumber(string $number): self
-    {
+    public function setNumber(string $number): self {
         $this->number = $number;
 
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
-    {
+    public function getCreatedAt(): ?\DateTime {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt): self
-    {
+    public function setCreatedAt(\DateTime $createdAt): self {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTime
-    {
+    public function getUpdatedAt(): ?\DateTime {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTime $updatedAt): self
-    {
+    public function setUpdatedAt(\DateTime $updatedAt): self {
         $this->updatedAt = $updatedAt;
 
         return $this;
     }
 
-    public function getProfile(): ?Profile
-    {
+    public function getProfile(): ?Profile {
         return $this->profile;
     }
 
-    public function setProfile(?Profile $profile): self
-    {
+    public function setProfile(?Profile $profile): self {
         $this->profile = $profile;
 
         return $this;
     }
 
-    public function getPrice(): ?float
-    {
+    public function getPrice(): ?float {
         return $this->price;
     }
 
-    public function setPrice(?float $price): self
-    {
+    public function setPrice(?float $price): self {
         $this->price = $price;
 
         return $this;

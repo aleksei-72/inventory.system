@@ -10,8 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=DepartmentRepository::class)
  */
-class Department
-{
+class Department {
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -34,35 +33,29 @@ class Department
      */
     private $rooms;
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->rooms = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
+    public function getId(): ?int {
         return $this->id;
     }
 
-    public function getTitle(): ?string
-    {
+    public function getTitle(): ?string {
         return $this->title;
     }
 
-    public function setTitle(string $title): self
-    {
+    public function setTitle(string $title): self {
         $this->title = $title;
 
         return $this;
     }
 
-    public function getAddress(): ?string
-    {
+    public function getAddress(): ?string {
         return $this->address;
     }
 
-    public function setAddress(string $address): self
-    {
+    public function setAddress(string $address): self {
         $this->address = $address;
 
         return $this;
@@ -71,13 +64,11 @@ class Department
     /**
      * @return Collection|Room[]
      */
-    public function getRooms(): Collection
-    {
+    public function getRooms(): Collection {
         return $this->rooms;
     }
 
-    public function addRoom(Room $room): self
-    {
+    public function addRoom(Room $room): self {
         if (!$this->rooms->contains($room)) {
             $this->rooms[] = $room;
             $room->setDepartment($this);
@@ -86,8 +77,7 @@ class Department
         return $this;
     }
 
-    public function removeRoom(Room $room): self
-    {
+    public function removeRoom(Room $room): self {
         if ($this->rooms->removeElement($room)) {
             // set the owning side to null (unless already changed)
             if ($room->getDepartment() === $this) {

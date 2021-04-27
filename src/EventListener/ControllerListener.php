@@ -36,7 +36,7 @@ class ControllerListener
     public function onKernelController(ControllerEvent $event) {
 
         //404 отдать без проверки токена
-        if($event->getController()[0]::class === 'App\Controller\ErrorController') {
+        if ($event->getController()[0]::class === 'App\Controller\ErrorController') {
             return 1;
         }
 
@@ -45,12 +45,12 @@ class ControllerListener
 
         //Часть маршрутов доступна без авторизации
         foreach ($this->routesWithoutAuthorization as $route) {
-            if($request->getPathInfo() == $route['url'] && $request->getMethod() == $route['method']) {
+            if ($request->getPathInfo() == $route['url'] && $request->getMethod() == $route['method']) {
                 return 0;
             }
         }
 
-        if(!$request->headers->has('Authorization')) {
+        if (!$request->headers->has('Authorization')) {
 
             $event->setController(function () {
                 return new JsonResponse(['error' => ErrorList::E_UNAUTHORIZED,
@@ -67,7 +67,7 @@ class ControllerListener
                 $jwt = new JwtToken();
                 $header = $request->headers->get('Authorization');
 
-                if(!str_starts_with($header, 'Bearer ')) {
+                if (!str_starts_with($header, 'Bearer ')) {
                     $event->setController(function () {
                         return new JsonResponse(['error' => ErrorList::E_TOKEN_INVALID,
                             'message' => 'invalid token'], 401);
@@ -99,7 +99,7 @@ class ControllerListener
             $userRepos = $doctrine->getManager()->getRepository(User::class);
             $user = $userRepos->find($jwt->get('user_id'));
 
-            if(!$user) {
+            if (!$user) {
                 $event->setController(function () {
                     return new JsonResponse(['error' => ErrorList::E_TOKEN_INVALID,
                         'message' => 'incorrect user'], 401);
@@ -107,7 +107,7 @@ class ControllerListener
                 return 1;
             }
 
-            if($user->getIsBlocked()) {
+            if ($user->getIsBlocked()) {
                 $event->setController(function () {
                     return new JsonResponse(['error' => ErrorList::E_USER_BLOCKED,
                         'message' => 'this user is blocked'], 401);
@@ -115,7 +115,7 @@ class ControllerListener
                 return 1;
             }
 
-            if($user->getRole() !== $jwt->get('user_role')) {
+            if ($user->getRole() !== $jwt->get('user_role')) {
                 $event->setController(function () {
                     return new JsonResponse(['error' => ErrorList::E_TOKEN_INVALID,
                         'message' => 'invalid token'], 401);
@@ -127,11 +127,11 @@ class ControllerListener
             $user->setLastActiveAt(new \DateTime());
             $doctrine->getManager()->flush();
 
-            if($jwt->get('user_role') === UserRoleList::U_READONLY && $request->getMethod() !== 'GET') {
+            if ($jwt->get('user_role') === UserRoleList::U_READONLY && $request->getMethod() !== 'GET') {
 
                 //Маршруты, разрешенные для ReadOnly юзеров
                 foreach ($this->routesAllowedForReadOnlyUsers as $route) {
-                    if($request->getPathInfo() == $route['url'] && $request->getMethod() == $route['method']) {
+                    if ($request->getPathInfo() == $route['url'] && $request->getMethod() == $route['method']) {
                         return 0;
                     }
                 }

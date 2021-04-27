@@ -10,8 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=RoomRepository::class)
  */
-class Room
-{
+class Room {
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -35,35 +34,29 @@ class Room
      */
     private $items;
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->items = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
+    public function getId(): ?int {
         return $this->id;
     }
 
-    public function getNumber(): ?string
-    {
+    public function getNumber(): ?string {
         return $this->number;
     }
 
-    public function setNumber(string $number): self
-    {
+    public function setNumber(string $number): self {
         $this->number = $number;
 
         return $this;
     }
 
-    public function getDepartment(): ?Department
-    {
+    public function getDepartment(): ?Department {
         return $this->department;
     }
 
-    public function setDepartment(?Department $department): self
-    {
+    public function setDepartment(?Department $department): self {
         $this->department = $department;
 
         return $this;
@@ -72,13 +65,11 @@ class Room
     /**
      * @return Collection|Item[]
      */
-    public function getItems(): Collection
-    {
+    public function getItems(): Collection {
         return $this->items;
     }
 
-    public function addItem(Item $item): self
-    {
+    public function addItem(Item $item): self {
         if (!$this->items->contains($item)) {
             $this->items[] = $item;
             $item->addRoom($this);
@@ -87,8 +78,7 @@ class Room
         return $this;
     }
 
-    public function removeItem(Item $item): self
-    {
+    public function removeItem(Item $item): self {
         if ($this->items->removeElement($item)) {
             $item->removeRoom($this);
         }

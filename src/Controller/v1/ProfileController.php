@@ -35,7 +35,7 @@ class ProfileController extends AbstractController
     public function getProfileList(): JsonResponse {
         $profiles = $this->getDoctrine()->getRepository(Profile::class)->findBy([],['id' => 'ASC']);
 
-        if(count($profiles) === 0) {
+        if (count($profiles) === 0) {
             return $this->json(['error' => ErrorList::E_INTERNAL_SERVER_ERROR, 'message' => 'profiles not found'], 500);
         }
 
@@ -57,24 +57,24 @@ class ProfileController extends AbstractController
     public function updateProfile(Request $request,  $id): JsonResponse {
         $inputJson = json_decode($request->getContent(), true);
 
-        if(!$inputJson) {
+        if (!$inputJson) {
             return $this->json(['error' => ErrorList::E_REQUEST_BODY_INVALID, 'message' => 'invalid body of request'], 400);
         }
 
         $manager = $this->getDoctrine()->getManager();
         $profile = $this->getDoctrine()->getRepository(Profile::class)->find($id);
 
-        if(!$profile) {
+        if (!$profile) {
             return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'profile not found'], 404);
         }
 
-        if(!empty($inputJson['name'])) {
+        if (!empty($inputJson['name'])) {
             $profile->setName($inputJson['name']);
         }
 
         $manager->flush();
 
-        return $this->json($this->$profile->toJSON());
+        return $this->json($profile->toJSON());
     }
 
 }

@@ -22,14 +22,14 @@ class LoginController extends AbstractController
     public function login(Request $request): JsonResponse {
         $inputJson = json_decode($request->getContent(), true);
 
-        if(!$inputJson) {
+        if (!$inputJson) {
             return $this->json(['error' => ErrorList::E_REQUEST_BODY_INVALID, 'message' => 'invalid body of request'], 400);
         }
-        if(empty($inputJson['username'])) {
+        if (empty($inputJson['username'])) {
             return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'not found username'], 400);
         }
 
-        if(empty($inputJson['password'])) {
+        if (empty($inputJson['password'])) {
             return $this->json(['error' => ErrorList::E_INVALID_DATA, 'message' => 'not found password'], 400);
         }
 
@@ -38,17 +38,17 @@ class LoginController extends AbstractController
 
         $usersList = $this->getDoctrine()->getRepository(User::class)->findBy(['userName' => $userName]);
 
-        if(count($usersList) !== 1) {
+        if (count($usersList) !== 1) {
             return $this->json(['error' => ErrorList::E_USER_NOT_FOUND, 'message' => 'user not found'], 404);
         }
 
         $user = $usersList[0];
 
-        if($user->getIsBlocked()) {
+        if ($user->getIsBlocked()) {
             return $this->json(['error' => ErrorList::E_USER_BLOCKED, 'message' => 'this user is blocked'], 403);
         }
 
-        if(!password_verify($password, $user->getPassword())) {
+        if (!password_verify($password, $user->getPassword())) {
             return $this->json(['error' => ErrorList::E_INVALID_PASSWORD, 'message' => 'password not verify'], 400);
         }
 
