@@ -212,4 +212,36 @@ class UserController extends AbstractController
         return $this->json($user->toJSON());
     }
 
+
+    /**
+     * @Route("/users/{id}", methods={"DELETE"}, requirements={"id"="\d+"})
+     * @param $id
+     * @param JwtToken $jwt
+     * @return JsonResponse
+     */
+    public function deleteUser($id, JwtToken $jwt): JsonResponse {
+
+        $user = $this->getDoctrine()->getRepository(User::class)->find($id);
+
+        if (!$user) {
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found item'], 404);
+        }
+
+        $isAdmin = $jwt->get('user_role') === UserRoleList::U_ADMIN;
+        $isSelf = $jwt->get('user_id') === (integer)$id;
+
+        if (!$isAdmin) {
+            return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'this user is not administrator'], 403);
+        }
+
+        if ($isSelf) {
+            return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'cant delete yourself'], 403);
+        }
+
+        $manager = $this->getDoctrine()->getManager();
+        $manager->remove($user);
+        $manager->flush();
+
+        return $this->json(null, 204);
+    }
 }
