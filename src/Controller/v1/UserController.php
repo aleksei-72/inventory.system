@@ -224,7 +224,7 @@ class UserController extends AbstractController
         $user = $this->getDoctrine()->getRepository(User::class)->find($id);
 
         if (!$user) {
-            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found item'], 404);
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found user'], 404);
         }
 
         $isAdmin = $jwt->get('user_role') === UserRoleList::U_ADMIN;

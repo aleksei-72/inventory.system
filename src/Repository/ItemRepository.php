@@ -75,6 +75,12 @@ class ItemRepository extends ServiceEntityRepository
 
             $queryParams["match_$i"] = '%' . mb_strtolower($word) . '%';
         }
+
+        if (mb_strlen($where) === 0) {
+            $where = "1=1";  
+        }
+
+
         $dql = "SELECT i FROM App\Entity\Item i JOIN i.category c " .
             "WHERE $where ORDER BY i.$sort ${order[$sort]}";
 
