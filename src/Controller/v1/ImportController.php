@@ -25,7 +25,7 @@ class ImportController extends AbstractController
      */
     public function importFile(): JsonResponse {
 
-        ini_set('max_execution_time', 20*60); 
+        ini_set('max_execution_time', 2*60); 
 
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
 
@@ -57,54 +57,45 @@ class ImportController extends AbstractController
 
         $content = $sheet->toArray();
 
-        $columnInHeader = ['title' => 2,
-        'number' => 3, 
-        'room' => 6, 
-        'countUnit' => 4, 
-        'countValue' => 5,
+        $columnInHeader = ['title' => 'наименован',
+        'number' => 'номер', 
+        'room' => 'мест', 
+        'countUnit' => 'единиц', 
+        'countValue' => 'колич',
         'profile' => -1,
         'price' => -1,
         'category' => -1];
 
+
         $indexForSearchColumn = array();
 
             
-        $firstItemRow = -1;
+        $firstItemRow = 0;
         $lastItemRow = $sheet->getHighestRow();
-
 
         //Чтение шапки таблицы
         for ($rowNumber = 0; $rowNumber < min(15, $lastItemRow); $rowNumber ++) {
 
-            foreach ($content[$rowNumber] as $headerIndex => $headerValue) {
-                //Поиск номеров необходимых колонок
-                foreach ($columnInHeader as $searchColumnTitle => $searchColumnIndex) {
+            foreach ($content[$rowNumber] as $headerCellIndex => $headerCellValue) {
 
-                    if ($headerValue == $searchColumnIndex) {
-                        $indexForSearchColumn[$searchColumnTitle] = $headerIndex;
+                $cellContent = str_replace([' ', '-', '-', "\t", "\n", '(', ')',
+                    ':', '\'', '"'], '', $headerCellValue);
+
+
+                //Поиск номеров необходимых колонок
+                foreach ($columnInHeader as $searchColumnTitle => $searchColumnText) {
+
+                    if (str_contains(mb_strtolower($cellContent), mb_strtolower($searchColumnText))) {
+                        $indexForSearchColumn[$searchColumnTitle] = $headerCellIndex;
+                        $firstItemRow = $rowNumber + 2;
                     }
                 }
                 
-            }
-
-
-            //Найден первый item. Шапка табицы закончилась
-            if (isset($indexForSearchColumn['title']) && 
-                $content[$rowNumber][$indexForSearchColumn['title']]) {
-            
-                $firstItemRow = $rowNumber + 1;
-                break;
-            }     
+            }   
         }
-
-
 
         $json = array('items' => array(), 'count' => 0);
 
-        //шапка таблицы не найдена
-        if ($firstItemRow == -1) {
-            return $json;
-        }
 
         //Не найдена колонка с наименованиями
         if (!isset($indexForSearchColumn['title'])) {
