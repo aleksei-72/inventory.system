@@ -4,6 +4,12 @@
 namespace App\Controller\v1;
 
 use App\Entity\User;
+use App\Entity\Room;
+use App\Entity\Category;
+use App\Entity\Profile;
+use App\Entity\Item;
+use App\Entity\Department;
+
 use App\ErrorList;
 use \shuchkin\SimpleXLSX;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,10 +25,12 @@ class ImportController extends AbstractController
      */
     public function importFile(): JsonResponse {
 
+        ini_set('max_execution_time', 20*60); 
+
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
 
         $reader->setReadDataOnly(true);
-        $spreadSheet = $reader->load('Inventory_2020.xlsx');
+        $spreadSheet = $reader->load('../../eXcel/Inventory_2020.xlsx');
 
         $sheetNames = $spreadSheet->getSheetNames();
 
@@ -33,11 +41,13 @@ class ImportController extends AbstractController
             $activeSheet = $spreadSheet->getSheetByName($sheet);
             $items = $this->parseSheet($activeSheet);
 
-            array_push($json['items'], $items['items']);
+            $json['items'] = array_merge($json['items'], $items['items']);
+
             $json['count'] += (int)$items['count'];
         }
+    
 
-
+        $this->replicationEntitiesInDB($json['items']);
 
         return $this->json($json);
     }
@@ -109,6 +119,7 @@ class ImportController extends AbstractController
 
             $item = array();
 
+            //Получение значенй из колонок таблицы
             foreach ($columnInHeader as $columnTitle => $columnIndex) {
 
 
@@ -120,6 +131,7 @@ class ImportController extends AbstractController
                     $item[$columnTitle] = null;
                 }
             }
+
 
             if (empty($item['title'])) {
                 continue;
@@ -137,6 +149,66 @@ class ImportController extends AbstractController
         $json['count'] = count($json['items']);
 
         return $json;
+    }
+
+
+    private function replicationEntitiesInDB(array $items) {
+        
+        $doctrine = $this->getDoctrine();
+        $manager = $doctrine->getManager();
+        
+
+        foreach ($items as $item) {        
+
+            if (!$item) {
+                continue;
+            }
+
+
+            $newItem = new Item();
+
+            $newItem->setCreatedAt(new \DateTime());
+            $newItem->setUpdatedAt(new \DateTime());
+
+            if (!empty($item['title'])) {
+                $newItem->setTitle($item['title']);
+            } else {
+                continue;
+            }
+
+            if (!empty($item['room'])) {
+
+                $room = $doctrine->getRepository(Room::class)
+                ->findBy(['number' => $item['room']]);
+
+                if (!$room) {
+                    $room = new Room();
+                    $room->setNumber($item['room']);
+                    $room->setDepartment($doctrine->getRepository(Department::class)->find(1));
+
+                    $manager->persist($room);
+                }
+
+                $newItem->addRoom($room);
+            }
+
+            if (!empty($item['number'])) {
+                $newItem->setNumber($item['number']);
+            }
+
+            if (!empty($item['count'])) {
+                $newItem->setCount($item['count']);
+            }
+
+            if (!empty($item['price'])) {
+                $newItem->setPrice($item['price']);
+            }
+
+            $manager->persist($newItem);
+        }
+
+
+        $manager->flush();
     }
 
 }
