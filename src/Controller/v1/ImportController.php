@@ -49,7 +49,7 @@ class ImportController extends AbstractController
 
         $this->replicationEntitiesInDB($json['items']);
 
-        return $this->json($json);
+        return $this->json($json['count']);
     }
 
 
@@ -172,7 +172,9 @@ class ImportController extends AbstractController
                 $room = $doctrine->getRepository(Room::class)
                 ->findBy(['number' => $item['room']]);
 
-                if (!$room) {
+                
+
+                if (count($room) !== 0) {
                     $room = new Room();
                     $room->setNumber($item['room']);
                     $room->setDepartment($doctrine->getRepository(Department::class)->find(1));
@@ -199,7 +201,7 @@ class ImportController extends AbstractController
         }
 
 
-        $manager->flush();
+       $manager->flush();
     }
 
 }
