@@ -27,10 +27,7 @@ class ImportController extends AbstractController
 
         ini_set('max_execution_time', 2*60); 
 
-        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
-
-        $reader->setReadDataOnly(true);
-        $spreadSheet = $reader->load('../../eXcel/Inventory_2020.xlsx');
+        $spreadSheet = \PhpOffice\PhpSpreadsheet\IOFactory::load('../../eXcel/Inventory_2020.xls');
 
         $sheetNames = $spreadSheet->getSheetNames();
 
