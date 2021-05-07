@@ -11,7 +11,6 @@ use App\Entity\Item;
 use App\Entity\Department;
 
 use App\ErrorList;
-use \shuchkin\SimpleXLSX;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -27,7 +26,7 @@ class ImportController extends AbstractController
 
         ini_set('max_execution_time', 2*60); 
 
-        $spreadSheet = \PhpOffice\PhpSpreadsheet\IOFactory::load('../../eXcel/Inventory_2020.xls');
+        $spreadSheet = \PhpOffice\PhpSpreadsheet\IOFactory::load('../../eXcel/Inventory_2020.xlsx');
 
         $sheetNames = $spreadSheet->getSheetNames();
 
@@ -169,9 +168,10 @@ class ImportController extends AbstractController
                 $room = $doctrine->getRepository(Room::class)
                 ->findBy(['number' => $item['room']]);
 
-                
-
                 if (count($room) !== 0) {
+                    $room = $room[0];
+                } else {
+                    //создание новой аудитории
                     $room = new Room();
                     $room->setNumber($item['room']);
                     $room->setDepartment($doctrine->getRepository(Department::class)->find(1));
