@@ -188,6 +188,12 @@ class Item {
         return $this;
     }
 
+    public function unsetProfile(): self {
+        $this->profile = null;
+
+        return $this;
+    }
+
     public function getPrice(): ?float {
         return $this->price;
     }
