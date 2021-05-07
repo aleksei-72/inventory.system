@@ -11,6 +11,7 @@ use App\Entity\Item;
 use App\Entity\Department;
 
 use App\ErrorList;
+use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,13 +21,34 @@ class ImportController extends AbstractController
 
     /**
      * @Route("/file/import", methods={"POST"})
+     * @param Request $request
      * @return JsonResponse
      */
-    public function importFile(): JsonResponse {
+    public function importFile(Request $request): JsonResponse {
 
-        ini_set('max_execution_time', 2*60); 
+        ini_set('max_execution_time', 2*60);
 
-        $spreadSheet = \PhpOffice\PhpSpreadsheet\IOFactory::load('../../eXcel/Inventory_2020.xlsx');
+        $files = $request->files->all();
+
+        $json = array('items' => array(), 'count' => 0);
+
+        foreach ($files as $file) {
+
+            $items = $this->parseFile($file);
+
+            $json['items'] = array_merge($json['items'], $items['items']);
+
+            $json['count'] += (int)$items['count'];
+
+            $this->replicationEntitiesInDB($json['items']);
+        }
+
+
+        return $this->json($json['count']);
+    }
+
+    private function parseFile($file): array {
+        $spreadSheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file);
 
         $sheetNames = $spreadSheet->getSheetNames();
 
@@ -35,25 +57,20 @@ class ImportController extends AbstractController
         foreach ($sheetNames as $sheet) {
 
             $activeSheet = $spreadSheet->getSheetByName($sheet);
+
             $items = $this->parseSheet($activeSheet);
 
             $json['items'] = array_merge($json['items'], $items['items']);
-
             $json['count'] += (int)$items['count'];
         }
-    
-
-        $this->replicationEntitiesInDB($json['items']);
-
-        return $this->json($json['count']);
+        return $json;
     }
-
 
     private function parseSheet($sheet): array {
 
         $content = $sheet->toArray();
 
-        $columnInHeader = ['title' => 'наименован',
+        $columnInHeader = ['title' => 'актив',
         'number' => 'номер', 
         'room' => 'мест', 
         'countUnit' => 'единиц', 
@@ -178,6 +195,7 @@ class ImportController extends AbstractController
 
                     $manager->persist($room);
                 }
+
 
                 $newItem->addRoom($room);
             }
