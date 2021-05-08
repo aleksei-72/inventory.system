@@ -3,6 +3,8 @@
 
 namespace App\Controller\v1;
 
+use App\Entity\ImportTransaction;
+use App\ErrorList;
 use App\Service\JwtToken;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,7 +15,7 @@ class ImportController extends AbstractController
 {
 
     /**
-     * @Route("/file/import", methods={"POST"})
+     * @Route("/imports", methods={"POST"})
      * @param Request $request
      * @return JsonResponse
      */
@@ -36,5 +38,25 @@ class ImportController extends AbstractController
 
 
         return $this->json($json['count']);
+    }
+
+    /**
+     * @Route("/imports", methods={"GET"})
+     * @return JsonResponse
+     */
+    public function getImportList(): JsonResponse {
+        $imports = $this->getDoctrine()->getRepository(ImportTransaction::class)->findBy([],['id' => 'ASC']);
+
+        if (count($imports) === 0) {
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'imports not found'], 404);
+        }
+
+        $json = array();
+
+        foreach ($imports as $import) {
+            array_push($json, $import->toJSON());
+        }
+
+        return $this->json($json);
     }
 }

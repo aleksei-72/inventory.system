@@ -127,4 +127,20 @@ class ImportTransaction
         return $this;
     }
 
+    /**
+     * @return array
+     */
+    public function toJSON(): array {
+        $json = array();
+        $json['id'] = $this->getId();
+        $json['fileName'] = $this->getFileName();
+        $json['execTime'] = $this->getExecTime();
+        $json['status'] = $this->getStatus();
+        $json['datetime'] = $this->getDateTime();
+        $json['description'] = $this->getDescription();
+        $json['count'] = $this->getCountItems();
+        $json['targetUser'] = $this->getTargetUser()->toJSON();
+
+        return $json;
+    }
 }
