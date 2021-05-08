@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -56,6 +58,15 @@ class User {
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $lastActiveAt;
+
+    /**
+     * @ORM\OneToMany(targetEntity=ImportTransaction::class, mappedBy="targetUser")
+     */
+    private $importTransactions;
+
+    public function __construct() {
+        $this->importTransactions = new ArrayCollection();
+    }
 
     public function getId(): ?int {
         return $this->id;
@@ -137,6 +148,33 @@ class User {
 
     public function setLastActiveAt(?\DateTimeInterface $lastActiveAt): self {
         $this->lastActiveAt = $lastActiveAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ImportTransaction[]
+     */
+    public function getImportTransactions(): Collection {
+        return $this->importTransactions;
+    }
+
+    public function addImportTransaction(ImportTransaction $importTransaction): self {
+        if (!$this->importTransactions->contains($importTransaction)) {
+            $this->importTransactions[] = $importTransaction;
+            $importTransaction->setTargetUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImportTransaction(ImportTransaction $importTransaction): self {
+        if ($this->importTransactions->removeElement($importTransaction)) {
+            // set the owning side to null (unless already changed)
+            if ($importTransaction->getTargetUser() === $this) {
+                $importTransaction->setTargetUser(null);
+            }
+        }
 
         return $this;
     }

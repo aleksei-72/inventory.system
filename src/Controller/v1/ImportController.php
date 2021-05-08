@@ -3,6 +3,7 @@
 
 namespace App\Controller\v1;
 
+use App\Service\JwtToken;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,7 +17,7 @@ class ImportController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    public function importFile(Request $request): JsonResponse {
+    public function importFile(Request $request, JwtToken $jwt): JsonResponse {
 
         ini_set('max_execution_time', 2*60);
 
@@ -28,7 +29,9 @@ class ImportController extends AbstractController
 
             $file->move('../storage', $file->getFileName());
 
-            exec('php ../bin/console excel:import '. $file->getFileName(). ' > /dev/null &');
+            //передать имя файла и id юзера, выполняющего импорт
+            exec('php ../bin/console excel:import '. $file->getFileName(). ' '.
+                $jwt->get('user_id'). ' > /dev/null &');
         }
 
 

@@ -2,8 +2,10 @@
 namespace App\Command;
 
 use App\Entity\Department;
+use App\Entity\ImportTransaction;
 use App\Entity\Item;
 use App\Entity\Room;
+use App\Entity\User;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,17 +28,55 @@ class ImportFileCommand extends Command
             ->setDescription('import items from excel files');
 
         $this->addArgument('fileName', InputArgument::REQUIRED, 'imported File');
+        $this->addArgument('userId', InputArgument::REQUIRED, 'user');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $manager = $this->doctrine->getManager();
+
+
+        $targetUser = $this->doctrine->getRepository(User::class)->find($input->getArgument('userId'));
+
+        if (!$targetUser) {
+            return Command::FAILURE;
+        }
+
         $fileName = $input->getArgument('fileName');
 
-        $json = $this->parseFile(__DIR__. '/../../storage/'. $fileName);
-        $this->replicationEntitiesInDB($json['items']);
+        $import = new ImportTransaction();
+        $import->setDateTime(new \DateTime());
+
+        $import->setTargetUser($targetUser);
+        $import->setFileName($fileName);
 
 
-        $output->writeln("Импортировано ${json['count']} элементов");
+
+        $start = microtime(true);
+
+        try {
+            $json = $this->parseFile(__DIR__. '/../../storage/'. $fileName);
+            $this->replicationEntitiesInDB($json['items']);
+
+            $import->setCountItems($json['count']);
+            $import->setStatus(true);
+
+            $import->setDescription('');
+
+        } catch (\Exception $e) {
+            $import->setCountItems(0);
+            $import->setStatus(false);
+
+            $import->setDescription($e->getMessage());
+        }
+
+        $end = microtime(true);
+
+        $import->setExecTime(round(($end - $start)* 1000));
+
+        $manager->persist($import);
+
+        $manager->flush();
 
         return Command::SUCCESS;
     }
@@ -46,9 +86,14 @@ class ImportFileCommand extends Command
 
 
     private function parseFile($file): array {
+
         $spreadSheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file);
 
         $sheetNames = $spreadSheet->getSheetNames();
+
+        if (count($sheetNames) === 0) {
+            throw new \Exception("Пустой файл");
+        }
 
         $json = array('items' => array(), 'count' => 0);
 
@@ -61,6 +106,7 @@ class ImportFileCommand extends Command
             $json['items'] = array_merge($json['items'], $items['items']);
             $json['count'] += (int)$items['count'];
         }
+
         return $json;
     }
 
