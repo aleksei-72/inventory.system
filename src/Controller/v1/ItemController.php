@@ -194,6 +194,11 @@ class ItemController extends AbstractController
             $roomRepos = $this->getDoctrine()->getRepository(Room::class);
 
             foreach ($inputJson['room_id'] as $newRoomId) {
+
+                if (empty($newRoomId)) {
+                    continue;
+                }
+
                 $room = $roomRepos->find($newRoomId);
 
                 if ($room) {
@@ -232,6 +237,11 @@ class ItemController extends AbstractController
             $roomList = $this->getDoctrine()->getRepository(Room::class)->findAll();
 
             foreach ($inputJson['room_string'] as $newRoomTitle) {
+
+                if (empty($newRoomId)) {
+                    continue;
+                }
+
                 foreach ($roomList as $room) {
                     if (str_contains(mb_strtolower($room->getNumber()), mb_strtolower($newRoomTitle))) {
                         $item->addRoom($room);
