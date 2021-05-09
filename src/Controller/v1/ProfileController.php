@@ -3,6 +3,7 @@
 
 namespace App\Controller\v1;
 
+use App\Entity\Item;
 use App\Entity\Profile;
 use App\ErrorList;
 use App\Service\JwtToken;
@@ -75,6 +76,47 @@ class ProfileController extends AbstractController
         $manager->flush();
 
         return $this->json($profile->toJSON());
+    }
+
+    /**
+     * @Route("/profiles/{id}", requirements={"id"="\d+"}, methods={"DELETE"})
+     * @param Request $request
+     * @param $id
+     * @return JsonResponse
+     */
+    public function deleteProfile(Request $request, $id): JsonResponse {
+
+        $doctrine = $this->getDoctrine();
+        $manager = $doctrine->getManager();
+
+        $newProfileId = $request->query->get('new_profile_id', null);
+
+        if ($newProfileId) {
+            $newProfile = $this->getDoctrine()->getRepository(Profile::class)->find($newProfileId);
+        }
+
+
+        $currentProfile = $this->getDoctrine()->getRepository(Profile::class)->find($id);
+
+        if (!$currentProfile) {
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'profile not found'], 404);
+        }
+
+        $items = $doctrine->getRepository(Item::class)->findBy(['profile' => $currentProfile]);
+
+
+        foreach ($items as $item) {
+            if(!empty($newProfile)) {
+                $item->setProfile($newProfile);
+            } else {
+                $item->unsetProfile();
+            }
+        }
+
+        $manager->remove($currentProfile);
+        $manager->flush();
+
+        return $this->json([], 200);
     }
 
 }
