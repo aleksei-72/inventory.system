@@ -18,6 +18,8 @@ class ImportFileCommand extends Command
 
     public function __construct(ContainerInterface $container, string $name = null)
     {
+        ini_set('max_execution_time', 2*60);
+
         $this->doctrine = $container->get('doctrine');
         parent::__construct($name);
     }

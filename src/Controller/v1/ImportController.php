@@ -21,23 +21,54 @@ class ImportController extends AbstractController
      */
     public function importFile(Request $request, JwtToken $jwt): JsonResponse {
 
-        ini_set('max_execution_time', 2*60);
-
         $files = $request->files->all();
-
-        $json = array('items' => array(), 'count' => 0);
 
         foreach ($files as $file) {
 
-            $file->move('../storage', $file->getFileName());
+            $fileName = str_replace([' '], '', $file->getClientORiginalName());
 
-            //передать имя файла и id юзера, выполняющего импорт
-            exec('php ../bin/console excel:import '. $file->getFileName(). ' '.
-                $jwt->get('user_id'). ' > /dev/null &');
+            //Писк свободного имени файла
+            if (file_exists('../storage/'. $fileName)) {
+                $i = 0;
+
+                $fileNameWithoutExt = pathinfo($fileName, PATHINFO_FILENAME);
+                $fileExt = pathinfo($fileName, PATHINFO_EXTENSION);
+
+                while (true) {
+                    $i ++;
+                    $newFileName = $fileNameWithoutExt. '_'. $i. '.'. $fileExt;
+
+                    if (!file_exists('../storage/'. $newFileName)) {
+                        $fileName = $newFileName;
+                        break;
+                    }
+
+                }
+            }
+
+
+
+            $file->move('../storage', $fileName);
+
+
+            //передать через аргументы имя файла и id юзера, выполняющего импорт
+
+            $command = 'php ../bin/console excel:import '. $fileName. ' '.
+                    $jwt->get('user_id');
+
+
+            if (str_contains(mb_strtolower(php_uname()), 'windows')) {
+
+                exec("start /B ". $command. " &");
+            } else {
+
+                exec($command. ' > /dev/null &');
+            }
+
         }
 
 
-        return $this->json($json['count']);
+        return $this->json(['fies_count' => count($files)]);
     }
 
     /**
