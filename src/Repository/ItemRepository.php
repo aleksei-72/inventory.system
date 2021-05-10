@@ -98,7 +98,7 @@ class ItemRepository extends ServiceEntityRepository
         }
 
 
-        $dql = "SELECT i FROM App\Entity\Item i JOIN i.category c " .
+        $dql = "SELECT i FROM App\Entity\Item i LEFT JOIN i.category c " .
             "WHERE $where ORDER BY $sort $sortOrder";
 
         $query = $this->getEntityManager()->createQuery($dql)
@@ -107,7 +107,7 @@ class ItemRepository extends ServiceEntityRepository
             ->setParameters($queryParams);
 
 
-        $sqlForTotalCount = "SELECT count(i.id) FROM App\Entity\Item i JOIN i.category c " .
+        $sqlForTotalCount = "SELECT count(i.id) FROM App\Entity\Item i LEFT JOIN i.category c " .
             "WHERE $where";
 
         $queryTotalCount = $this->getEntityManager()->createQuery($sqlForTotalCount)
