@@ -23,11 +23,18 @@ class ItemRepository extends ServiceEntityRepository
     public function findByCategory(int $category, array $order, int $limit, int $offset): array {
         $sort = array_keys($order)[0];
 
+        $sortOrder = $order[$sort];
+
+        $sort = 'i.' . $sort;
+
+        if ($sort === 'i.count') {
+            $sort = 'cast(substring(i.count, \'\d+\') AS Integer)';
+        }
 
         $where = '(c.id = :category)';
 
         $dql = "SELECT i FROM App\Entity\Item i JOIN i.category c " .
-            "WHERE $where ORDER BY i.$sort ${order[$sort]}";
+            "WHERE $where ORDER BY $sort $sortOrder";
 
         $query = $this->getEntityManager()->createQuery($dql)
             ->setMaxResults($limit)
@@ -44,6 +51,7 @@ class ItemRepository extends ServiceEntityRepository
         return ['items' => $query->getResult(), 'total_count' => $queryTotalCount->getResult()[0][1]];
     }
 
+
     public function findByKeyWord(string $match, array $order, int $limit, int $offset): array {
         $sort = array_keys($order)[0];
         $match = strtolower($match);
@@ -52,10 +60,19 @@ class ItemRepository extends ServiceEntityRepository
         $queryParams = array();
 
 
+        $sortOrder = $order[$sort];
+
+        $sort = 'i.' . $sort;
+
+        if ($sort === 'i.count') {
+            $sort = 'cast(substring(i.count, \'\d+\') AS Integer)';
+        }
+
         $where = '';
 
 
         $firstExp = true;
+
         for ($i = 0; $i < count($queryWords); $i ++) {
             $word = $queryWords[$i];
 
@@ -82,7 +99,7 @@ class ItemRepository extends ServiceEntityRepository
 
 
         $dql = "SELECT i FROM App\Entity\Item i JOIN i.category c " .
-            "WHERE $where ORDER BY i.$sort ${order[$sort]}";
+            "WHERE $where ORDER BY $sort $sortOrder";
 
         $query = $this->getEntityManager()->createQuery($dql)
             ->setMaxResults($limit)
