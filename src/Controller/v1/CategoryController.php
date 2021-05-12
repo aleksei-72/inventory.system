@@ -41,7 +41,7 @@ class CategoryController extends AbstractController
         $manager->persist($category);
         $manager->flush();
 
-        return $this->json($category->toJSON());
+        return $this->json(['id' => $category->getId()]);
     }
 
 
@@ -121,8 +121,11 @@ class CategoryController extends AbstractController
 
 
         foreach ($items as $item) {
-                $item->setCategory($newCategory);
+            $item->setCategory($newCategory);
         }
+
+        $manager->flush();
+
 
         $manager->remove($currentCategory);
         $manager->flush();

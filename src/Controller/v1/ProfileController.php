@@ -107,8 +107,11 @@ class ProfileController extends AbstractController
 
 
         foreach ($items as $item) {
-                $item->setProfile($newProfile);
+            $item->setProfile($newProfile);
         }
+
+        $manager->flush();
+
 
         $manager->remove($currentProfile);
         $manager->flush();
