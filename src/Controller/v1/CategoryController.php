@@ -5,6 +5,7 @@ namespace App\Controller\v1;
 
 
 use App\Entity\Category;
+use App\Entity\Item;
 use App\ErrorList;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,14 +20,28 @@ class CategoryController extends AbstractController
      * @return JsonResponse
      */
     public function createCategory(): JsonResponse {
-        $manager = $this->getDoctrine()->getManager();
+        $doctrine = $this->getDoctrine();
+        $manager = $doctrine->getManager();
+        $categoryRepos = $doctrine->getRepository(Category::class);
+
+
+        $categoryTitle = 'Новая категория ';
+        $i = 1;
+        while (true) {
+            if (count($categoryRepos->findBy(['title' => $categoryTitle. $i])) === 0) {
+                $categoryTitle = $categoryTitle. $i;
+                break;
+            }
+            $i ++;
+        }
+
 
         $category = new Category();
-        $category->setTitle('');
+        $category->setTitle($categoryTitle);
         $manager->persist($category);
         $manager->flush();
 
-        return $this->json($this->$category->toJSON());
+        return $this->json($category->toJSON());
     }
 
 
@@ -77,7 +92,43 @@ class CategoryController extends AbstractController
         return $this->json($category->toJSON());
     }
 
+    /**
+     * @Route("/categories/{id}", requirements={"id"="\d+"}, methods={"DELETE"})
+     * @param Request $request
+     * @param $id
+     * @return JsonResponse
+     */
+    public function deleteCategory(Request $request, $id): JsonResponse {
 
+        $doctrine = $this->getDoctrine();
+        $manager = $doctrine->getManager();
+
+        $newCategoryId = $request->query->get('new_category_id', null);
+
+        $newCategory = null;
+        if ($newCategoryId) {
+            $newCategory = $this->getDoctrine()->getRepository(Category::class)->find($newCategoryId);
+        }
+
+
+        $currentCategory = $this->getDoctrine()->getRepository(Category::class)->find($id);
+
+        if (!$currentCategory) {
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'category not found'], 404);
+        }
+
+        $items = $doctrine->getRepository(Item::class)->findBy(['category' => $currentCategory]);
+
+
+        foreach ($items as $item) {
+                $item->setCategory($newCategory);
+        }
+
+        $manager->remove($currentCategory);
+        $manager->flush();
+
+        return $this->json([], 200);
+    }
 
 
 }

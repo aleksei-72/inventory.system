@@ -91,6 +91,7 @@ class ProfileController extends AbstractController
 
         $newProfileId = $request->query->get('new_profile_id', null);
 
+        $newProfile = null;
         if ($newProfileId) {
             $newProfile = $this->getDoctrine()->getRepository(Profile::class)->find($newProfileId);
         }
@@ -106,11 +107,7 @@ class ProfileController extends AbstractController
 
 
         foreach ($items as $item) {
-            if(!empty($newProfile)) {
                 $item->setProfile($newProfile);
-            } else {
-                $item->unsetProfile();
-            }
         }
 
         $manager->remove($currentProfile);
