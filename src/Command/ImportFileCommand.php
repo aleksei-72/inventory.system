@@ -206,6 +206,7 @@ class ImportFileCommand extends Command
 
         $manager = $this->doctrine->getManager();
 
+        $createdResources = ['rooms' => []];
 
         foreach ($items as $item) {
 
@@ -227,22 +228,38 @@ class ImportFileCommand extends Command
 
             if (!empty($item['room'])) {
 
-                $room = $this->doctrine->getRepository(Room::class)
+                $room = null;
+
+                //поиск в базе
+                $roomsInDB = $this->doctrine->getRepository(Room::class)
                     ->findBy(['number' => $item['room']]);
 
-                if (count($room) !== 0) {
-                    $room = $room[0];
-                } else {
+                if (count($roomsInDB) !== 0) {
+                    $room = $roomsInDB[0];
+                }
+
+                //поиск в списке созданных ресурсов
+                if (!$room) {
+                    foreach ($createdResources['rooms'] as $createdRoom) {
+                        if ($createdRoom->getNumber() === $item['room']) {
+                            $room = $createdRoom;
+                            break;
+                        }
+                    }
+                }
+
+                if(!$room) {
                     //создание новой аудитории
                     $room = new Room();
                     $room->setNumber($item['room']);
                     $room->setDepartment($this->doctrine->getRepository(Department::class)->find(1));
 
+                    array_push($createdResources['rooms'], $room);
                     $manager->persist($room);
                 }
 
-
                 $newItem->addRoom($room);
+
             }
 
             if (!empty($item['number'])) {

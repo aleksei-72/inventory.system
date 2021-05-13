@@ -68,7 +68,7 @@ class ImportController extends AbstractController
         }
 
 
-        return $this->json(['fies_count' => count($files)]);
+        return $this->json(['files_count' => count($files)]);
     }
 
     /**
