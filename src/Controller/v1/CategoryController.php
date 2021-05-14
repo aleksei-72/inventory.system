@@ -130,7 +130,7 @@ class CategoryController extends AbstractController
         $manager->remove($currentCategory);
         $manager->flush();
 
-        return $this->json([], 200);
+        return $this->json([], 204);
     }
 
 

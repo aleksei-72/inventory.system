@@ -84,4 +84,26 @@ class DepartmentController extends AbstractController
         return $this->json($department->toJSON());
     }
 
+
+    /**
+     * @Route("/departments/{id}", requirements={"id"="\d+"}, methods={"DELETE"})
+     * @param $id
+     * @return JsonResponse
+     */
+    public function deleteDepartments($id):JsonResponse {
+        $doctrine = $this->getDoctrine();
+        $manager = $doctrine->getManager();
+
+        $departments = $this->getDoctrine()->getRepository(Department::class)->find($id);
+
+        if (!$departments) {
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'room not found'], 404);
+        }
+
+        $manager->remove($departments);
+        $manager->flush();
+
+        return $this->json([], 204);
+    }
+
 }

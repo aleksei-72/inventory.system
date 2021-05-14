@@ -88,4 +88,26 @@ class RoomController extends AbstractController
 
         return $this->json($room->toJSON());
     }
+
+
+    /**
+     * @Route("/rooms/{id}", requirements={"id"="\d+"}, methods={"DELETE"})
+     * @param $id
+     * @return JsonResponse
+     */
+    public function deleteRoom($id):JsonResponse {
+        $doctrine = $this->getDoctrine();
+        $manager = $doctrine->getManager();
+
+        $room = $this->getDoctrine()->getRepository(Room::class)->find($id);
+
+        if (!$room) {
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'room not found'], 404);
+        }
+
+        $manager->remove($room);
+        $manager->flush();
+
+        return $this->json([], 204);
+    }
 }

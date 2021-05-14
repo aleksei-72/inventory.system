@@ -116,7 +116,7 @@ class ProfileController extends AbstractController
         $manager->remove($currentProfile);
         $manager->flush();
 
-        return $this->json([], 200);
+        return $this->json([], 204);
     }
 
 }
