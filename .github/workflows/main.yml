@@ -58,7 +58,7 @@ jobs:
         env:
           ARGS: -avz --delete --exclude=.git --exclude=.github --exclude=.env.local
           USER: deployer
-          HOST: msk-svrm-go.s.dfms.ga
+          HOST: msk-fb-sm.s.dfms.ga
           PORT: 456
           KEY: ${{ secrets.DEPLOY_KEY }}
           TARGET: /srv/inventory/api/stage
@@ -81,7 +81,7 @@ jobs:
         env:
           ARGS: -avz --delete --exclude=.git --exclude=.github --exclude=.env.local
           USER: deployer
-          HOST: msk-svrm-go.s.dfms.ga
+          HOST: msk-fb-sm.s.dfms.ga
           PORT: 456
           KEY: ${{ secrets.DEPLOY_KEY }}
           TARGET: /srv/inventory/api/master
