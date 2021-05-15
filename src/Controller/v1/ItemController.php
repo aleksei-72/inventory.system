@@ -77,7 +77,7 @@ class ItemController extends AbstractController
         }
 
         if (!in_array($orderBy, ['title', 'comment', 'count', 'createdAt', 'updatedAt', 'profile', 'number', 'price', 'category'], true)) {
-            $orderBy = 'id';
+            $orderBy = 'updatedAt';
         }
 
         if (!is_numeric($limit) || $limit < 0) {
