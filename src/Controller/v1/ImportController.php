@@ -15,7 +15,7 @@ class ImportController extends AbstractController
 {
 
     /**
-     * @Route("/imports", methods={"POST"})
+     * @Route("/items/imports", methods={"POST"})
      * @param Request $request
      * @return JsonResponse
      */
@@ -54,7 +54,7 @@ class ImportController extends AbstractController
             //передать через аргументы имя файла и id юзера, выполняющего импорт
 
             $command = 'php ../bin/console excel:import '. $fileName. ' '.
-                    $jwt->get('user_id');
+                $jwt->get('user_id');
 
 
             if (str_contains(mb_strtolower(php_uname()), 'windows')) {
@@ -72,7 +72,7 @@ class ImportController extends AbstractController
     }
 
     /**
-     * @Route("/imports", methods={"GET"})
+     * @Route("/items/imports", methods={"GET"})
      * @return JsonResponse
      */
     public function getImportList(): JsonResponse {
