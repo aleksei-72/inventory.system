@@ -43,7 +43,7 @@ jobs:
           HOST: msk-fb-sm.s.dfms.ga
           PORT: 456
           KEY: ${{ secrets.DEPLOY_KEY }}
-          TARGET: /srv/inventory/api/stage
+          TARGET: /srv/inventory-platform.gq/api/stage
 
   deploy_production:
     name: Deploy to production server
@@ -66,5 +66,5 @@ jobs:
           HOST: msk-fb-sm.s.dfms.ga
           PORT: 456
           KEY: ${{ secrets.DEPLOY_KEY }}
-          TARGET: /srv/inventory/api/master
+          TARGET: /srv/inventory-platform.gq/api/master
   
