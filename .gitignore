@@ -1,4 +1,5 @@
 .idea/
+SQL_dump/
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php

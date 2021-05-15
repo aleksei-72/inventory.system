@@ -9,8 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @ORM\Table(name="`user`")
  */
-class User
-{
+class User {
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -39,7 +38,7 @@ class User
     private $password;
 
     /**
-     * @ORM\Column(type="integer", options={"default": "extract(epoch from now())"})
+     * @ORM\Column(type="datetime")
      */
     private $createdAt;
 
@@ -48,80 +47,114 @@ class User
      */
     private $role;
 
-    public function getId(): ?int
-    {
+    /**
+     * @ORM\Column(type="boolean", options={"default": "false"})
+     */
+    private $isBlocked = false;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $lastActiveAt;
+
+    public function getId(): ?int {
         return $this->id;
     }
 
-    public function getName(): ?string
-    {
+    public function getName(): ?string {
         return $this->name;
     }
 
-    public function setName(string $name): self
-    {
+    public function setName(string $name): self {
         $this->name = $name;
 
         return $this;
     }
 
-    public function getUserName(): ?string
-    {
+    public function getUserName(): ?string {
         return $this->userName;
     }
 
-    public function setUserName(string $userName): self
-    {
+    public function setUserName(string $userName): self {
         $this->userName = $userName;
 
         return $this;
     }
 
-    public function getEmail(): ?string
-    {
+    public function getEmail(): ?string {
         return $this->email;
     }
 
-    public function setEmail(?string $email): self
-    {
+    public function setEmail(?string $email): self {
         $this->email = $email;
 
         return $this;
     }
 
-    public function getPassword(): ?string
-    {
+    public function getPassword(): ?string {
         return $this->password;
     }
 
-    public function setPassword(string $password): self
-    {
+    public function setPassword(string $password): self {
         $this->password = $password;
 
         return $this;
     }
 
-    public function getCreatedAt(): ?int
-    {
+    public function getCreatedAt(): ?\DateTime {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(int $createdAt): self
-    {
+    public function setCreatedAt(\DateTime $createdAt): self {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getRole(): ?string
-    {
+    public function getRole(): ?string {
         return $this->role;
     }
 
-    public function setRole(string $role): self
-    {
+    public function setRole(string $role): self {
         $this->role = $role;
 
         return $this;
+    }
+
+    public function getIsBlocked(): ?bool {
+        return $this->isBlocked;
+    }
+
+    public function setIsBlocked(bool $isBlocked): self {
+        $this->isBlocked = $isBlocked;
+
+        return $this;
+    }
+
+    public function getLastActiveAt(): ?\DateTimeInterface {
+        return $this->lastActiveAt;
+    }
+
+    public function setLastActiveAt(?\DateTimeInterface $lastActiveAt): self {
+        $this->lastActiveAt = $lastActiveAt;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function toJSON(): array {
+        $json = array();
+        $json['id'] = $this->getId();
+        $json['name'] = $this->getName();
+        $json['username'] = $this->getUserName();
+        $json['email'] = $this->getEmail();
+        $json['created_at'] = $this->getCreatedAt();
+        $json['role'] = $this->getRole();
+        $json['blocked'] = $this->getIsBlocked();
+        $json['lastActiveAt'] = $this->getLastActiveAt();
+
+        return $json;
     }
 }

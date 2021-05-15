@@ -10,8 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=ProfileRepository::class)
  */
-class Profile
-{
+class Profile {
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -29,23 +28,19 @@ class Profile
      */
     private $items;
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->items = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
+    public function getId(): ?int {
         return $this->id;
     }
 
-    public function getName(): ?string
-    {
+    public function getName(): ?string {
         return $this->Name;
     }
 
-    public function setName(string $Name): self
-    {
+    public function setName(string $Name): self {
         $this->Name = $Name;
 
         return $this;
@@ -54,13 +49,11 @@ class Profile
     /**
      * @return Collection|Item[]
      */
-    public function getItems(): Collection
-    {
+    public function getItems(): Collection {
         return $this->items;
     }
 
-    public function addItem(Item $item): self
-    {
+    public function addItem(Item $item): self {
         if (!$this->items->contains($item)) {
             $this->items[] = $item;
             $item->setProfile($this);
@@ -69,8 +62,7 @@ class Profile
         return $this;
     }
 
-    public function removeItem(Item $item): self
-    {
+    public function removeItem(Item $item): self {
         if ($this->items->removeElement($item)) {
             // set the owning side to null (unless already changed)
             if ($item->getProfile() === $this) {
@@ -79,5 +71,16 @@ class Profile
         }
 
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function toJSON(): array {
+        $json = array();
+        $json['id'] = $this->getId();
+        $json['name'] = $this->getName();
+
+        return $json;
     }
 }

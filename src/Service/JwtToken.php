@@ -8,7 +8,6 @@ use Firebase\JWT\JWT;
 
 class JwtToken
 {
-    public static $initPayLoad = array();
 
     const jwtKey = 'MIIBOQIBAAJBAMasF6OTRziNcYwoNTb1AsQz+oEtRjq5EZS1ZGvIYkqONu2VCcAa'.
 'P00SWcUK67EVTrSJj7jHmoN5HUH2x46H9EcCAwEAAQJAHYa+DKV61EDRO09OeVh4'.
@@ -18,18 +17,19 @@ class JwtToken
 'x2+m6Qn81HgTAiBqEyuPrcGBQD9Cgpnv3Pzxh4tk3nu89nTGQTulLlqU6QIgVxiV'.
 '8Doa4t08r2hV44xr01TTyzu5KxIIi8pR/4Mg8R4=';
 
-    const jwtExp = 60;//*60*24*365*5;
+    const jwtExp = 60*5;//*60*24*365*5;
 
+    public static $globalPayload = array();
 
     private $payload = array();
 
     public function __construct() {
-        $this->payload = self::$initPayLoad;
-        self::$initPayLoad = array();
+        $this->payload = self::$globalPayload;
     }
 
     public function set(string $name, $value){
         $this->payload[$name] = $value;
+        self::$globalPayload[$name] = $value;
     }
 
     public function get(string $name, $default = null){
@@ -48,6 +48,7 @@ class JwtToken
 
     public function createFromHeader($header) {
         $this->payload = (array)JWT::decode($header, self::jwtKey, array('HS256'));
+        self::$globalPayload = $this->payload;
     }
 
 }

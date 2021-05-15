@@ -3,11 +3,10 @@
 
 namespace App\Controller\v1;
 
+use App\Entity\Item;
 use App\Entity\Profile;
 use App\ErrorList;
 use App\Service\JwtToken;
-use App\UserRoleList;
-use http\Env\Response;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,33 +16,37 @@ class ProfileController extends AbstractController
 {
     /**
      * @Route("/profiles", methods={"POST"})
-     * @param Request $request
-     * @param JwtToken $jwt
      * @return JsonResponse
      */
-    public function createProfile(Request $request, JwtToken $jwt): JsonResponse {
-
-        if($jwt->get('user_role') == UserRoleList::U_READONLY) {
-            return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'do not have permission'], 403);
-        }
-
-        $inputJson = json_decode($request->getContent(), true);
-
-        if(!$inputJson) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'not found body of request'], 400);
-        }
-        if(empty($inputJson['name'])) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'not found name of profile'], 400);
-        }
-
+    public function createProfile(): JsonResponse {
         $manager = $this->getDoctrine()->getManager();
 
         $newProfile = new Profile();
-        $newProfile->setName($inputJson['name']);
+        $newProfile->setName('');
         $manager->persist($newProfile);
 
         $manager->flush();
-        return $this->json(['id' => $newProfile->getId(), 'title' => $newProfile->getName()]);
+        return $this->json(['id' => $newProfile->getId()]);
+    }
+
+    /**
+     * @Route("/profiles", methods={"GET"})
+     * @return JsonResponse
+     */
+    public function getProfileList(): JsonResponse {
+        $profiles = $this->getDoctrine()->getRepository(Profile::class)->findBy([],['id' => 'ASC']);
+
+        if (count($profiles) === 0) {
+            return $this->json(['error' => ErrorList::E_INTERNAL_SERVER_ERROR, 'message' => 'profiles not found'], 500);
+        }
+
+        $json = array();
+
+        foreach ($profiles as $profile) {
+            array_push($json, $profile->toJSON());
+        }
+
+        return $this->json($json);
     }
 
     /**
@@ -52,31 +55,68 @@ class ProfileController extends AbstractController
      * @param $id
      * @return JsonResponse
      */
-    public function updateProfile(Request $request, JwtToken $jwt, $id): JsonResponse {
-
-        if($jwt->get('user_role') == UserRoleList::U_READONLY) {
-            return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'do not have permission'], 403);
-        }
-
+    public function updateProfile(Request $request,  $id): JsonResponse {
         $inputJson = json_decode($request->getContent(), true);
 
-        if(!$inputJson) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'not found body of request'], 400);
-        }
-        if(empty($inputJson['name'])) {
-            return $this->json(['error' => ErrorList::E_BAD_REQUEST, 'message' => 'not found name of profile'], 400);
+        if (!$inputJson) {
+            return $this->json(['error' => ErrorList::E_REQUEST_BODY_INVALID, 'message' => 'invalid body of request'], 400);
         }
 
         $manager = $this->getDoctrine()->getManager();
         $profile = $this->getDoctrine()->getRepository(Profile::class)->find($id);
 
-        if(!$profile) {
+        if (!$profile) {
             return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'profile not found'], 404);
         }
 
-        $profile->setName($inputJson['name']);
+        if (!empty($inputJson['name'])) {
+            $profile->setName($inputJson['name']);
+        }
+
         $manager->flush();
 
-        return new JsonResponse();
+        return $this->json($profile->toJSON());
     }
+
+    /**
+     * @Route("/profiles/{id}", requirements={"id"="\d+"}, methods={"DELETE"})
+     * @param Request $request
+     * @param $id
+     * @return JsonResponse
+     */
+    public function deleteProfile(Request $request, $id): JsonResponse {
+
+        $doctrine = $this->getDoctrine();
+        $manager = $doctrine->getManager();
+
+        $newProfileId = $request->query->get('new_profile_id', null);
+
+        $newProfile = null;
+        if ($newProfileId) {
+            $newProfile = $this->getDoctrine()->getRepository(Profile::class)->find($newProfileId);
+        }
+
+
+        $currentProfile = $this->getDoctrine()->getRepository(Profile::class)->find($id);
+
+        if (!$currentProfile) {
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'profile not found'], 404);
+        }
+
+        $items = $doctrine->getRepository(Item::class)->findBy(['profile' => $currentProfile]);
+
+
+        foreach ($items as $item) {
+            $item->setProfile($newProfile);
+        }
+
+        $manager->flush();
+
+
+        $manager->remove($currentProfile);
+        $manager->flush();
+
+        return $this->json([], 200);
+    }
+
 }
