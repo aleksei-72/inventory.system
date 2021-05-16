@@ -7,11 +7,16 @@ namespace App\Controller\v1;
 use App\Entity\Item;
 use App\Entity\Room;
 use App\ErrorList;
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 use App\Repository\ItemRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ReportController extends AbstractController
@@ -93,8 +98,64 @@ class ReportController extends AbstractController
 
         $doctrine = $this->getDoctrine();
 
-        $items = $doctrine->getRepository(Item::class)->getSomeColumnsByCriterias($criterias, $columns, [$orderBy => $sort]);
+        $data = $doctrine->getRepository(Item::class)->getSomeColumnsByCriterias($criterias, $columns, [$orderBy => $sort]);
 
-        return $this->json(['filters' => $criterias, 'columns' => $columns, 'items' => $items]);
+        if (!$data) {
+            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found entity by this filters'], 204);
+        }
+
+        $response =  new StreamedResponse(
+            function () use ($data) {
+                $this->generateReportFile($data, 'php://output');
+            }
+        );
+
+
+        $response->headers->set('Content-Type', 'application/vnd.ms-excel');
+        $response->headers->set('Content-Disposition', 'attachment;filename="file.xlsx"');
+        return $response;
+    }
+
+
+    private function generateReportFile($data, $fileName) {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Отчет сформирован ' .
+            (new \DateTime())->format('Y-m-d H:i:s'));
+
+
+        $sheet->getCellByColumnAndRow(1, 3)->setValue('id');
+        $sheet->getCellByColumnAndRow(1, 4)->setValue('1');
+
+        $cellColumnForHeader = 2;
+        //создание шапки таблицы
+
+        foreach ($data[0] as $field => $value) {
+            $sheet->getCellByColumnAndRow($cellColumnForHeader, 3)->setValue($field);
+            $sheet->getCellByColumnAndRow($cellColumnForHeader, 4)->setValue($cellColumnForHeader);
+            $cellColumnForHeader++;
+        }
+
+
+        $id = 1;
+
+        $cellRow = 6;
+
+        //заполнение данными
+        foreach ($data as $entity) {
+            $sheet->getCellByColumnAndRow(1, $cellRow)->setValue($id);
+            $id ++;
+
+            $cellColumn = 2;
+            foreach ($entity as $key => $value) {
+                $sheet->getCellByColumnAndRow($cellColumn, $cellRow)->setValue($value);
+                $cellColumn ++;
+            }
+            $cellRow ++;
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($fileName);
+        $writer->save(__DIR__ . '/../../../storage/reports/file.xlsx');
     }
 }
