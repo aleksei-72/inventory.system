@@ -133,6 +133,15 @@ class ItemRepository extends ServiceEntityRepository
 
         $sort = array_keys($order)[0];
 
+        $sortOrder = $order[$sort];
+        
+        $sort = 'i.' . $sort;
+
+        if ($sort === 'i.count') {
+            $sort = 'cast(substring(i.count, \'\d+\') AS Integer)';
+        }
+
+
         $queryParams = array();
 
         $where = '';
@@ -247,7 +256,7 @@ class ItemRepository extends ServiceEntityRepository
 
 
         $dql = "SELECT $selected FROM App\Entity\Item i $joins " .
-            "WHERE $where ORDER BY i.$sort ${order[$sort]}";
+            "WHERE $where ORDER BY $sort $sortOrder";
 
 
         $query = $this->getEntityManager()->createQuery($dql)->setParameters($queryParams);
