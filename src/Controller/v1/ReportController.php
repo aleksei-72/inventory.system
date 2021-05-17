@@ -8,6 +8,7 @@ use App\Entity\Item;
 use App\ErrorList;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 use App\Repository\ItemRepository;
@@ -138,8 +139,12 @@ class ReportController extends AbstractController
         $sheet->getCellByColumnAndRow(1, 4)->setValue('1');
 
         foreach ($data[0] as $field => $value) {
+            $sheet->getColumnDimensionByColumn($cellColumnForHeader)->setAutoSize(true);
+
             $sheet->getCellByColumnAndRow($cellColumnForHeader, 3)->setValue($columnNames[$field]);
-            $sheet->getCellByColumnAndRow($cellColumnForHeader, 4)->setValue($cellColumnForHeader);
+
+            $sheet->getCellByColumnAndRow($cellColumnForHeader, 4)->setValue($cellColumnForHeader)
+            ->getStyle()->getAlignment()->setHorizontal('center');
             $cellColumnForHeader++;
         }
 
@@ -157,9 +162,10 @@ class ReportController extends AbstractController
                 $cell = $sheet->getCellByColumnAndRow($cellColumn, $cellRow);
                 $cell->setValue($value);
 
-                /*if ($property === 'price') {
-                    //$cell->
-                }*/
+                if ($property === 'price') {
+                    $cell->getStyle()->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                }
+
                 $cellColumn ++;
             }
             $cellRow ++;
@@ -167,6 +173,6 @@ class ReportController extends AbstractController
 
         $writer = new Xlsx($spreadsheet);
         $writer->save($fileName);
-        $writer->save(__DIR__ . '/../../../storage/reports/file.xlsx');
+        //$writer->save(__DIR__ . '/../../../storage/reports/file.xlsx');
     }
 }
