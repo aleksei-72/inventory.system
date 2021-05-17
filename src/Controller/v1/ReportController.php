@@ -5,7 +5,6 @@ namespace App\Controller\v1;
 
 
 use App\Entity\Item;
-use App\Entity\Room;
 use App\ErrorList;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -15,7 +14,6 @@ use App\Repository\ItemRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -88,7 +86,7 @@ class ReportController extends AbstractController
 
         if (!empty($inputJson['order'])) {
             if (strtolower($inputJson['order']) == 'asc') {
-                $order = 'asc';
+                $sort = 'asc';
             }
         }
 
@@ -124,21 +122,29 @@ class ReportController extends AbstractController
             (new \DateTime())->format('Y-m-d H:i:s'));
 
 
-        $sheet->getCellByColumnAndRow(1, 3)->setValue('id');
-        $sheet->getCellByColumnAndRow(1, 4)->setValue('1');
+
+
 
         $cellColumnForHeader = 2;
+
+        $columnNames = ['room' => 'Помещение (место)', 'profile' => 'Ответственное лицо',
+            'category' => 'Категория', 'department' => 'Корпус', 'count' => 'Количество', 'number' => 'Инвентаризационный номер',
+            'title' => 'Наименование объекта нефинансового актива', 'price' => 'Цена', 'comment' => 'Комментарий',
+            'created_at' => 'Дата создания', 'updated_at' => 'Дата редактирования'];
+
+
         //создание шапки таблицы
+        $sheet->getCellByColumnAndRow(1, 3)->setValue('№ Записи');
+        $sheet->getCellByColumnAndRow(1, 4)->setValue('1');
 
         foreach ($data[0] as $field => $value) {
-            $sheet->getCellByColumnAndRow($cellColumnForHeader, 3)->setValue($field);
+            $sheet->getCellByColumnAndRow($cellColumnForHeader, 3)->setValue($columnNames[$field]);
             $sheet->getCellByColumnAndRow($cellColumnForHeader, 4)->setValue($cellColumnForHeader);
             $cellColumnForHeader++;
         }
 
 
         $id = 1;
-
         $cellRow = 6;
 
         //заполнение данными
@@ -147,8 +153,13 @@ class ReportController extends AbstractController
             $id ++;
 
             $cellColumn = 2;
-            foreach ($entity as $key => $value) {
-                $sheet->getCellByColumnAndRow($cellColumn, $cellRow)->setValue($value);
+            foreach ($entity as $property => $value) {
+                $cell = $sheet->getCellByColumnAndRow($cellColumn, $cellRow);
+                $cell->setValue($value);
+
+                /*if ($property === 'price') {
+                    //$cell->
+                }*/
                 $cellColumn ++;
             }
             $cellRow ++;
