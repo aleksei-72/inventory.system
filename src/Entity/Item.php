@@ -111,7 +111,7 @@ class Item {
         return $this->category;
     }
 
-    public function setCategory(?Category $category): self {
+    public function setCategory(?Category $category = null): self {
         $this->category = $category;
 
         return $this;
@@ -182,17 +182,12 @@ class Item {
         return $this->profile;
     }
 
-    public function setProfile(?Profile $profile): self {
+    public function setProfile(?Profile $profile = null): self {
         $this->profile = $profile;
 
         return $this;
     }
 
-    public function unsetProfile(): self {
-        $this->profile = null;
-
-        return $this;
-    }
 
     public function getPrice(): ?float {
         return $this->price;
