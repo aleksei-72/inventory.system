@@ -191,7 +191,7 @@ class ImportFileCommand extends Command
                 continue;
             }
 
-            $itemCountWithUnit = ($item['countValue'] ?? 1) . ' '. ($item['countUnit'] ?? 'шт');
+            $itemCountWithUnit = ((int)$item['countValue'] ?? 1) . ' '. ($item['countUnit'] ?? 'шт');
 
 
             $item ['count'] = $itemCountWithUnit;
@@ -289,7 +289,6 @@ class ImportFileCommand extends Command
                 $newItem->setProfile($profile);
             }
 
-            var_dump($item['countUnit'], $item['countValue']);
 
             if (!empty($item['category'])) {
 
