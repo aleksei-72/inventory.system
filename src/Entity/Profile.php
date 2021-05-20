@@ -21,7 +21,7 @@ class Profile {
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $Name;
+    private $name;
 
     /**
      * @ORM\OneToMany(targetEntity=Item::class, mappedBy="profile")
@@ -37,11 +37,11 @@ class Profile {
     }
 
     public function getName(): ?string {
-        return $this->Name;
+        return $this->name;
     }
 
-    public function setName(string $Name): self {
-        $this->Name = $Name;
+    public function setName(string $name): self {
+        $this->name = $name;
 
         return $this;
     }

@@ -1,9 +1,11 @@
 <?php
 namespace App\Command;
 
+use App\Entity\Category;
 use App\Entity\Department;
 use App\Entity\ImportTransaction;
 use App\Entity\Item;
+use App\Entity\Profile;
 use App\Entity\Room;
 use App\Entity\User;
 use Symfony\Component\Console\Command\Command;
@@ -121,9 +123,11 @@ class ImportFileCommand extends Command
             'room' => 'мест',
             'countUnit' => 'единиц',
             'countValue' => 'колич',
-            'profile' => -1,
-            'price' => -1,
-            'category' => -1];
+            'profile' => 'лицо',
+            'price' => 'цена',
+            'category' => 'категор',
+            'comment' => 'коммент',
+            'department' => 'корпус'];
 
 
         $indexForSearchColumn = array();
@@ -206,7 +210,7 @@ class ImportFileCommand extends Command
 
         $manager = $this->doctrine->getManager();
 
-        $createdResources = ['rooms' => []];
+        $createdResources = ['rooms' => array(), 'profiles' => array(), 'departments' => array(), 'categories' => array()];
 
         foreach ($items as $item) {
 
@@ -226,41 +230,84 @@ class ImportFileCommand extends Command
                 continue;
             }
 
+
+            if (!empty($item['department'])) {
+
+                $department = $this->findEntityInDataBaseAndResource(['title' => $item['department']], $createdResources['departments'],
+                    Department::class);
+
+                if(!$department) {
+                    //создание нового корпуса
+                    $department = new Department();
+                    $department->setTitle($item['department']);
+                    $department->setAddress('');
+
+                    array_push($createdResources['departments'], $department);
+                    $manager->persist($department);
+                }
+
+            }
+
             if (!empty($item['room'])) {
 
-                $room = null;
-
-                //поиск в базе
-                $roomsInDB = $this->doctrine->getRepository(Room::class)
-                    ->findBy(['number' => $item['room']]);
-
-                if (count($roomsInDB) !== 0) {
-                    $room = $roomsInDB[0];
-                }
-
-                //поиск в списке созданных ресурсов
-                if (!$room) {
-                    foreach ($createdResources['rooms'] as $createdRoom) {
-                        if ($createdRoom->getNumber() === $item['room']) {
-                            $room = $createdRoom;
-                            break;
-                        }
-                    }
-                }
+                $room = $this->findEntityInDataBaseAndResource(['number' => $item['room']], $createdResources['rooms'],
+                    Room::class);
 
                 if(!$room) {
                     //создание новой аудитории
                     $room = new Room();
                     $room->setNumber($item['room']);
-                    $room->setDepartment($this->doctrine->getRepository(Department::class)->find(1));
+
+                    if (isset($department)) {
+                        $room->setDepartment($department);
+                    } else {
+                        $room->setDepartment($this->doctrine->getRepository(Department::class)->find(1));
+                    }
+
 
                     array_push($createdResources['rooms'], $room);
                     $manager->persist($room);
                 }
 
                 $newItem->addRoom($room);
-
             }
+
+            if (!empty($item['profile'])) {
+
+                $profile = $this->findEntityInDataBaseAndResource(['name' => $item['profile']], $createdResources['profiles'],
+                    Profile::class);
+
+                if(!$profile) {
+                    //создание нового профиля
+                    $profile = new Profile();
+                    $profile->setName($item['profile']);
+
+                    array_push($createdResources['profiles'], $profile);
+                    $manager->persist($profile);
+                }
+
+                $newItem->setProfile($profile);
+            }
+
+            var_dump($item['countUnit'], $item['countValue']);
+
+            if (!empty($item['category'])) {
+
+                $category = $this->findEntityInDataBaseAndResource(['title' => $item['category']], $createdResources['categories'],
+                    Category::class);
+
+                if(!$category) {
+                    //создание новой категории
+                    $category = new Category();
+                    $category->setTitle($item['category']);
+
+                    array_push($createdResources['categories'], $category);
+                    $manager->persist($category);
+                }
+
+                $newItem->setCategory($category);
+            }
+
 
             if (!empty($item['number'])) {
                 $newItem->setNumber($item['number']);
@@ -275,9 +322,11 @@ class ImportFileCommand extends Command
             }
 
             if (!empty($item['price'])) {
-                $newItem->setPrice($item['price']);
-            } else {
-                $newItem->setPrice('0');
+                $newItem->setPrice((float)str_replace(',', '', $item['price']));
+            }
+
+            if (!empty($item['comment'])) {
+                $newItem->setComment($item['comment']);
             }
 
             $manager->persist($newItem);
@@ -285,5 +334,32 @@ class ImportFileCommand extends Command
 
 
         $manager->flush();
+    }
+
+
+    private function findEntityInDataBaseAndResource(array $criterias, array $resource, $className): mixed {
+
+        //поиск в базе
+        $entityInDB = $this->doctrine->getRepository($className)
+            ->findBy($criterias);
+
+        if (count($entityInDB) !== 0) {
+            return $entityInDB[0];
+        }
+
+        //поиск в списке созданных ресурсов
+        foreach ($resource as $entity) {
+
+            $entityJSON = $entity->toJSON();
+
+            foreach ($criterias as $key => $value) {
+                if ($entityJSON[$key] !== $value) {
+                    continue 2;
+                }
+            }
+            return $entity;
+        }
+
+        return null;
     }
 }
