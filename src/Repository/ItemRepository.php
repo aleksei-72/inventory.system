@@ -19,7 +19,7 @@ class ItemRepository extends ServiceEntityRepository
         'category_id' => 'c.id', 'department_id' => 'd.id', 'count' => 'i.count', 'number' => 'i.number',
         'price' => 'i.price', 'created_at' => 'i.createdAt', 'updatedAt' => 'i.updatedAt'];
 
-    public static $columnNames = ['room' => 'r.number', 'profile' => 'p.Name',
+    public static $columnNames = ['room' => 'r.number', 'profile' => 'p.name',
         'category' => 'c.title', 'department' => 'd.title', 'count' => 'i.count', 'number' => 'i.number',
         'title' => 'i.title', 'price' => 'i.price', 'comment' => 'i.comment',
         'created_at' => 'i.createdAt', 'updated_at' => 'i.updatedAt'];
