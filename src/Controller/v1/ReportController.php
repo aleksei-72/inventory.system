@@ -49,6 +49,10 @@ class ReportController extends AbstractController
         foreach ($inputJson['filters'] as $conditionName => $condition) {
             if (in_array($conditionName, $filterNames, true)) {
 
+                if (!$condition) {
+                    continue;
+                }
+
                 if (is_array($condition)) {
 
                     try {
@@ -56,8 +60,10 @@ class ReportController extends AbstractController
                         if(!in_array($operator, array_keys(ItemRepository::$operators))) {
                             continue;
                         }
+
                         $value = $condition['value'];
                         $criterias[$conditionName] = ['operator' => $operator, 'value' => $value];
+
                     } catch (\Exception $e) {
                         continue;
                     }
