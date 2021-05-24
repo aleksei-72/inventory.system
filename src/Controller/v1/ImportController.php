@@ -53,7 +53,7 @@ class ImportController extends AbstractController
 
             //передать через аргументы имя файла и id юзера, выполняющего импорт
 
-            $command = 'php ../bin/console excel:import '. $fileName. ' '.
+            $command = 'php ../bin/console excel:import "'. $fileName. '" '.
                 $jwt->get('user_id');
 
 
