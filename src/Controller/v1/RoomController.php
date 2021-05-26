@@ -39,10 +39,6 @@ class RoomController extends AbstractController
     public function getRoomsList(): JsonResponse {
         $rooms = $this->getDoctrine()->getRepository(Room::class)->findBy([],['id' => 'ASC']);
 
-        if (count($rooms) === 0) {
-            return $this->json(['error' => ErrorList::E_INTERNAL_SERVER_ERROR, 'message' => 'rooms not found'], 500);
-        }
-
         $json = array();
 
         foreach ($rooms as $room) {

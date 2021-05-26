@@ -52,10 +52,6 @@ class CategoryController extends AbstractController
     public function getList(): JsonResponse {
         $categories = $this->getDoctrine()->getRepository(Category::class)->findBy([],['id' => 'ASC']);
 
-        if (count($categories) === 0) {
-            return $this->json(['error' => ErrorList::E_INTERNAL_SERVER_ERROR, 'message' => 'categories not found'], 500);
-        }
-
         $json = array();
         foreach ($categories as $category) {
             array_push($json, $category->toJSON());

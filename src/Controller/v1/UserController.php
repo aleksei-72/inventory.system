@@ -68,10 +68,6 @@ class UserController extends AbstractController
     public function getUsersList(): JsonResponse {
         $users = $this->getDoctrine()->getRepository(User::class)->findBy([],['id' => 'ASC']);
 
-        if (count($users) === 0) {
-            return $this->json(['error' => ErrorList::E_INTERNAL_SERVER_ERROR, 'message' => 'users not found'], 500);
-        }
-
         $json = array();
 
         foreach ($users as $user) {

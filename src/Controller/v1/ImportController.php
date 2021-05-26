@@ -78,10 +78,6 @@ class ImportController extends AbstractController
     public function getImportList(): JsonResponse {
         $imports = $this->getDoctrine()->getRepository(ImportTransaction::class)->findBy([],['id' => 'ASC']);
 
-        if (count($imports) === 0) {
-            return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'imports not found'], 404);
-        }
-
         $json = array();
 
         foreach ($imports as $import) {
