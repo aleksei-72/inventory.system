@@ -1,5 +1,8 @@
 <?php
+
+
 namespace App\Command;
+
 
 use App\Entity\Category;
 use App\Entity\Department;
@@ -20,7 +23,7 @@ class ImportFileCommand extends Command
 
     public function __construct(ContainerInterface $container, string $name = null)
     {
-        ini_set('max_execution_time', 2*60);
+        ini_set('max_execution_time', 25);
 
         $this->doctrine = $container->get('doctrine');
         parent::__construct($name);
@@ -58,8 +61,29 @@ class ImportFileCommand extends Command
 
         $start = microtime(true);
 
+        register_shutdown_function(function () use ($start, $import, $manager){
+
+            $import->setCountItems(0);
+            $import->setStatus(false);
+
+            $import->setDescription('Maximum execution time is exceeded');
+
+            $end = microtime(true);
+
+            $import->setExecTime(round(($end - $start)* 1000));
+
+            $manager->persist($import);
+
+            $manager->flush();
+
+        });
+
         try {
             $json = $this->parseFile(__DIR__. '/../../storage/'. $fileName);
+
+            if ($json['count'] === 0) {
+                throw new \Exception("not found items in file");
+            }
             $this->replicationEntitiesInDB($json['items']);
 
             $import->setCountItems($json['count']);
@@ -90,6 +114,10 @@ class ImportFileCommand extends Command
 
 
     private function parseFile($file): array {
+
+        if (!is_file($file)) {
+            throw new \Exception('cannot read file');
+        }
 
         $spreadSheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file);
 
@@ -160,8 +188,8 @@ class ImportFileCommand extends Command
         $json = array('items' => array(), 'count' => 0);
 
 
-        //Не найдена колонка с наименованиями
-        if (!isset($indexForSearchColumn['title'])) {
+        //Не возможно прочитать шапку таблицы (она не найдена)
+        if (count($indexForSearchColumn) === 0) {
             return $json;
         }
 
@@ -187,9 +215,6 @@ class ImportFileCommand extends Command
             }
 
 
-            if (empty($item['title'])) {
-                continue;
-            }
 
             $itemCountWithUnit = ((int)$item['countValue'] ?? 1) . ' '. ($item['countUnit'] ?? 'шт');
 
@@ -227,7 +252,7 @@ class ImportFileCommand extends Command
             if (!empty($item['title'])) {
                 $newItem->setTitle($item['title']);
             } else {
-                continue;
+                $newItem->setTitle('');
             }
 
 

@@ -57,6 +57,7 @@ class ReportController extends AbstractController
 
                     try {
                         $operator = $condition['operator'];
+
                         if(!in_array($operator, array_keys(ItemRepository::$operators))) {
                             continue;
                         }
