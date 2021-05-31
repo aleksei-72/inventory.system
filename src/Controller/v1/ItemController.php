@@ -13,12 +13,16 @@ use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Annotation\isGrantedFor;
 
 class ItemController extends AbstractController
 {
 
     /**
      * @Route("/items", methods={"POST"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @return JsonResponse
      */
     public function createItem(): JsonResponse {
@@ -44,6 +48,9 @@ class ItemController extends AbstractController
 
     /**
      * @Route("/items/{id}", methods={"GET"}, requirements={"id"="\d+"})
+     *
+     * @IsGrantedFor(roles = {"reader", "user", "admin"})
+     *
      * @param $id
      * @return JsonResponse
      */
@@ -60,6 +67,9 @@ class ItemController extends AbstractController
 
     /**
      * @Route("/items", methods={"GET"})
+     *
+     * @IsGrantedFor(roles = {"reader", "user", "admin"})
+     *
      * @param Request $request
      * @return JsonResponse
      */
@@ -137,6 +147,9 @@ class ItemController extends AbstractController
 
     /**
      * @Route("/items/{id}", methods={"PUT"}, requirements={"id"="\d+"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @param Request $request
      * @param $id
      * @return JsonResponse
@@ -261,6 +274,9 @@ class ItemController extends AbstractController
 
     /**
      * @Route("/items/{id}", methods={"DELETE"}, requirements={"id"="\d+"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @param $id
      * @return JsonResponse
      */

@@ -27,12 +27,12 @@ class JwtToken
         $this->payload = self::$globalPayload;
     }
 
-    public function set(string $name, $value){
+    public function set(string $name, $value) {
         $this->payload[$name] = $value;
         self::$globalPayload[$name] = $value;
     }
 
-    public function get(string $name, $default = null){
+    public function get(string $name, $default = null) {
         return $this->payload[$name]? $this->payload[$name] : $default;
     }
 

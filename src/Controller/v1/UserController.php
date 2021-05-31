@@ -11,20 +11,20 @@ use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Annotation\isGrantedFor;
 
 class UserController extends AbstractController
 {
 
     /**
      * @Route("/users", methods={"POST"})
+     *
+     * @IsGrantedFor(roles = {"admin"})
+     *
      * @param JwtToken $jwt
      * @return JsonResponse
      */
     public function createUser(JwtToken $jwt): JsonResponse {
-
-        if ($jwt->get('user_role') !== UserRoleList::U_ADMIN) {
-            return $this->json(['error' => ErrorList::E_DONT_HAVE_PERMISSION, 'message' => 'only the administrator can create new users'], 403);
-        }
 
         $manager = $this->getDoctrine()->getManager();
 
@@ -53,6 +53,7 @@ class UserController extends AbstractController
         $user->setPassword(password_hash('P@ssw0rd', PASSWORD_BCRYPT));
         $user->setRole(UserRoleList::U_READONLY);
         $user->setCreatedAt(new \DateTime());
+        $user->setIsBlocked(true);
 
         $manager->persist($user);
         $manager->flush();
@@ -63,6 +64,9 @@ class UserController extends AbstractController
 
     /**
      * @Route("/users", methods={"GET"})
+     *
+     * @IsGrantedFor(roles = {"admin"})
+     *
      * @return JsonResponse
      */
     public function getUsersList(): JsonResponse {
@@ -79,6 +83,9 @@ class UserController extends AbstractController
 
     /**
      * @Route("/users/{id}", methods={"PUT"}, requirements={"id"="\d+"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @param Request $request
      * @param JwtToken $jwt
      * @param $id
@@ -211,6 +218,9 @@ class UserController extends AbstractController
 
     /**
      * @Route("/users/{id}", methods={"DELETE"}, requirements={"id"="\d+"})
+     *
+     * @IsGrantedFor(roles = {"admin"})
+     *
      * @param $id
      * @param JwtToken $jwt
      * @return JsonResponse

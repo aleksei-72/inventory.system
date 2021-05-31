@@ -17,12 +17,16 @@ use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Annotation\isGrantedFor;
 
 class ReportController extends AbstractController
 {
 
     /**
      * @Route("/items/report", methods={"POST"})
+     *
+     * @IsGrantedFor(roles = {"reader", "user", "admin"})
+     *
      * @param Request $request
      * @return Response
      */

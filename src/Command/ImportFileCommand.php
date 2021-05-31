@@ -61,20 +61,23 @@ class ImportFileCommand extends Command
 
         $start = microtime(true);
 
-        register_shutdown_function(function () use ($start, $import, $manager){
+        register_shutdown_function(function () use ($start, $import, $manager) {
 
-            $import->setCountItems(0);
-            $import->setStatus(false);
+            if (!$import->getId()) {
 
-            $import->setDescription('Maximum execution time is exceeded');
+                $import->setCountItems(0);
+                $import->setStatus(false);
 
-            $end = microtime(true);
+                $import->setDescription('Maximum execution time is exceeded');
 
-            $import->setExecTime(round(($end - $start)* 1000));
+                $end = microtime(true);
 
-            $manager->persist($import);
+                $import->setExecTime(round(($end - $start) * 1000));
 
-            $manager->flush();
+                $manager->persist($import);
+
+                $manager->flush();
+            }
 
         });
 

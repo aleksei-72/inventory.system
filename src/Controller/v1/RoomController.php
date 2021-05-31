@@ -10,12 +10,16 @@ use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Annotation\isGrantedFor;
 
 class RoomController extends AbstractController
 {
 
     /**
      * @Route("/rooms", methods={"POST"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @return JsonResponse
      */
     public function createRoom(): JsonResponse {
@@ -34,6 +38,9 @@ class RoomController extends AbstractController
 
     /**
      * @Route("/rooms", methods={"GET"})
+     *
+     * @IsGrantedFor(roles = {"reader", "user", "admin"})
+     *
      * @return JsonResponse
      */
     public function getRoomsList(): JsonResponse {
@@ -51,6 +58,9 @@ class RoomController extends AbstractController
 
     /**
      * @Route("/rooms/{id}", requirements={"id"="\d+"}, methods={"PUT"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @param Request $request
      * @param $id
      * @return JsonResponse
@@ -88,6 +98,9 @@ class RoomController extends AbstractController
 
     /**
      * @Route("/rooms/{id}", requirements={"id"="\d+"}, methods={"DELETE"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @param $id
      * @return JsonResponse
      */

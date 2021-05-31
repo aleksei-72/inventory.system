@@ -10,12 +10,16 @@ use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Annotation\isGrantedFor;
 
 class ImportController extends AbstractController
 {
 
     /**
      * @Route("/items/imports", methods={"POST"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @param Request $request
      * @return JsonResponse
      */
@@ -73,6 +77,9 @@ class ImportController extends AbstractController
 
     /**
      * @Route("/items/imports", methods={"GET"})
+     *
+     * @IsGrantedFor(roles = {"reader", "user", "admin"})
+     *
      * @return JsonResponse
      */
     public function getImportList(): JsonResponse {

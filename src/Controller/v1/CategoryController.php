@@ -11,12 +11,16 @@ use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Annotation\isGrantedFor;
 
 
 class CategoryController extends AbstractController
 {
     /**
      * @Route("/categories", methods={"POST"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @return JsonResponse
      */
     public function createCategory(): JsonResponse {
@@ -47,6 +51,9 @@ class CategoryController extends AbstractController
 
     /**
      * @Route("/categories", methods={"GET"})
+     *
+     * @IsGrantedFor(roles = {"reader", "user", "admin"})
+     *
      * @return JsonResponse
      */
     public function getList(): JsonResponse {
@@ -61,6 +68,10 @@ class CategoryController extends AbstractController
 
     /**
      * @Route("/categories/{id}", requirements={"id"="\d+"}, methods={"PUT"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
+     *
      * @param Request $request
      * @param $id
      * @return JsonResponse
@@ -90,6 +101,9 @@ class CategoryController extends AbstractController
 
     /**
      * @Route("/categories/{id}", requirements={"id"="\d+"}, methods={"DELETE"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @param Request $request
      * @param $id
      * @return JsonResponse
