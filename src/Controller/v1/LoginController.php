@@ -10,12 +10,16 @@ use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Annotation\isGrantedFor;
 
 class LoginController extends AbstractController
 {
 
     /**
      * @Route("/auth", methods={"POST"})
+     *
+     * @IsGrantedFor(roles = {"guest"})
+     *
      * @param Request $request
      * @return JsonResponse
      */
@@ -63,6 +67,9 @@ class LoginController extends AbstractController
 
     /**
      * @Route("/token", methods={"POST"})
+     *
+     * @IsGrantedFor(roles = {"reader", "user", "admin"})
+     *
      * @param JwtToken $jwt
      * @return JsonResponse
      */
@@ -72,6 +79,9 @@ class LoginController extends AbstractController
 
     /**
      * @Route("/me")
+     *
+     * @IsGrantedFor(roles = {"reader", "user", "admin"})
+     *
      * @param JwtToken $jwt
      * @return JsonResponse
      */

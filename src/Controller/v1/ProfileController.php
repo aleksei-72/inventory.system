@@ -11,11 +11,15 @@ use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Annotation\isGrantedFor;
 
 class ProfileController extends AbstractController
 {
     /**
      * @Route("/profiles", methods={"POST"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @return JsonResponse
      */
     public function createProfile(): JsonResponse {
@@ -31,6 +35,9 @@ class ProfileController extends AbstractController
 
     /**
      * @Route("/profiles", methods={"GET"})
+     *
+     * @IsGrantedFor(roles = {"reader", "user", "admin"})
+     *
      * @return JsonResponse
      */
     public function getProfileList(): JsonResponse {
@@ -47,6 +54,9 @@ class ProfileController extends AbstractController
 
     /**
      * @Route("/profiles/{id}", requirements={"id"="\d+"}, methods={"PUT"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @param Request $request
      * @param $id
      * @return JsonResponse
@@ -76,6 +86,9 @@ class ProfileController extends AbstractController
 
     /**
      * @Route("/profiles/{id}", requirements={"id"="\d+"}, methods={"DELETE"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @param Request $request
      * @param $id
      * @return JsonResponse

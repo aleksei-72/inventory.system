@@ -9,12 +9,17 @@ use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Annotation\isGrantedFor;
 
 class DepartmentController extends AbstractController
 {
 
     /**
      * @Route("/departments", methods={"POST"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
+     *
      * @return JsonResponse
      */
     public function createDepartment(): JsonResponse {
@@ -32,6 +37,9 @@ class DepartmentController extends AbstractController
 
     /**
      * @Route("/departments", methods={"GET"})
+     *
+     * @IsGrantedFor(roles = {"reader", "user", "admin"})
+     *
      * @return JsonResponse
      */
     public function getDepartmentsList(): JsonResponse {
@@ -49,6 +57,9 @@ class DepartmentController extends AbstractController
 
     /**
      * @Route("/departments/{id}", requirements={"id"="\d+"}, methods={"PUT"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @param Request $request
      * @param $id
      * @return JsonResponse
@@ -83,6 +94,9 @@ class DepartmentController extends AbstractController
 
     /**
      * @Route("/departments/{id}", requirements={"id"="\d+"}, methods={"DELETE"})
+     *
+     * @IsGrantedFor(roles = {"user", "admin"})
+     *
      * @param $id
      * @return JsonResponse
      */
