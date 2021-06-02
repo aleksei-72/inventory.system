@@ -4,9 +4,11 @@
 namespace App\Controller\v1;
 
 
+use App\ColumnList;
 use App\Entity\Item;
 use App\ErrorList;
 
+use App\Service\RawColumnsRequester;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -42,8 +44,8 @@ class ReportController extends AbstractController
         }
 
 
-        $filterNames = array_keys(ItemRepository::$filterNames);
-        $columnNames = array_keys(ItemRepository::$columnNames);
+        $filterNames = array_keys(RawColumnsRequester::$filterNames);
+        $columnNames = array_keys(RawColumnsRequester::$columnNames);
 
 
         $criterias = array();
@@ -62,7 +64,7 @@ class ReportController extends AbstractController
                     try {
                         $operator = $condition['operator'];
 
-                        if(!in_array($operator, array_keys(ItemRepository::$operators))) {
+                        if(!in_array($operator, array_keys(RawColumnsRequester::$operators))) {
                             continue;
                         }
 
@@ -87,12 +89,13 @@ class ReportController extends AbstractController
         }
 
         //default value
-        $orderBy = 'id';
+        $orderBy = ColumnList::itemSortingBy['updated_at'];
         $sort = 'desc';
 
         if (!empty($inputJson['sort'])) {
-            if (in_array($inputJson['sort'], ['title', 'comment', 'count', 'createdAt', 'updatedAt', 'profile', 'number', 'price', 'category'], true)) {
-                $orderBy = $inputJson['sort'];
+
+            if (array_key_exists($inputJson['sort'], ColumnList::itemSortingBy)) {
+                $orderBy = ColumnList::itemSortingBy[$inputJson['sort']];
             }
         }
 
@@ -108,7 +111,7 @@ class ReportController extends AbstractController
 
         $doctrine = $this->getDoctrine();
 
-        $data = $doctrine->getRepository(Item::class)->getSomeColumnsByCriterias($criterias, $columns, [$orderBy => $sort]);
+        $data = (new RawColumnsRequester($doctrine))->getSomeColumnsByCriterias($criterias, $columns, [$orderBy => $sort]);
 
         if (!$data) {
             return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'not found entity by this filters'], 204);

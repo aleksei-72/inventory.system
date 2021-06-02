@@ -4,6 +4,7 @@
 namespace App\Controller\v1;
 
 
+use App\ColumnList;
 use App\Entity\Category;
 use App\Entity\Item;
 use App\Entity\Room;
@@ -78,7 +79,7 @@ class ItemController extends AbstractController
         $limit = $request->query->get('limit', 50);
         $skip = $request->query->get('skip', 0);
         $categoryId = $request->query->get('category_id', 0);
-        $orderBy = $request->query->get('sort', 'id');
+        $orderBy = $request->query->get('sort', ColumnList::itemSortingBy['updated_at']);
         $order = $request->query->get('order', 'desc');
         $query = $request->query->get('query', null);
 
@@ -86,14 +87,15 @@ class ItemController extends AbstractController
             $order = 'desc';
         }
 
-        if (!in_array($orderBy, ['title', 'comment', 'count', 'createdAt', 'updatedAt', 'profile', 'number', 'price', 'category'], true)) {
-            $orderBy = 'updatedAt';
+
+        if (array_key_exists($orderBy, ColumnList::itemSortingBy)) {
+            $orderBy = ColumnList::itemSortingBy[$orderBy];
         }
+
 
         if (!is_numeric($limit) || $limit < 0) {
             $limit = 50;
         }
-
 
         if (!is_numeric($skip) || $skip < 0) {
             $skip = 0;
@@ -129,9 +131,7 @@ class ItemController extends AbstractController
                 $items = $itemRepos->findByCategory($categoryId, [$orderBy => $order], (int)$limit, (int)$skip);
             } else {
 
-                $itemsList = $itemRepos->findBy([], [$orderBy => $order], (int)$limit, (int)$skip);
-                $totalCount = $itemRepos->count([]);
-                $items = ['items' => $itemsList, 'total_count' => $totalCount];
+                $items= $itemRepos->findByKeyWord('', [$orderBy => $order], (int)$limit, (int)$skip);
             }
         }
 
