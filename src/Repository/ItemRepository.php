@@ -23,12 +23,12 @@ class ItemRepository extends ServiceEntityRepository
     public function findByCategory(int $category, array $order, int $limit, int $offset): array {
         $sort = array_keys($order)[0];
 
-        $sortOrder = $order[$sort];
+        $sort = str_replace('%order%', $order[$sort], $sort);
 
         $where = '(c.id = :category)';
 
         $dql = "SELECT i FROM App\Entity\Item i JOIN i.category c " .
-            "WHERE $where ORDER BY $sort $sortOrder";
+            "WHERE $where ORDER BY $sort";
 
         $query = $this->getEntityManager()->createQuery($dql)
             ->setMaxResults($limit)
@@ -53,8 +53,8 @@ class ItemRepository extends ServiceEntityRepository
         $queryWords = explode(' ', $match);
         $queryParams = array();
 
+        $sort = str_replace('%order%', $order[$sort], $sort);
 
-        $sortOrder = $order[$sort];
 
         $where = '';
 
@@ -87,7 +87,7 @@ class ItemRepository extends ServiceEntityRepository
 
 
         $dql = "SELECT i FROM App\Entity\Item i LEFT JOIN i.category c " .
-            "WHERE $where ORDER BY $sort $sortOrder";
+            "WHERE $where ORDER BY $sort";
 
         $query = $this->getEntityManager()->createQuery($dql)
             ->setMaxResults($limit)
