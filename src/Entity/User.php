@@ -64,6 +64,11 @@ class User {
      */
     private $importTransactions;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $deletedAt;
+
     public function __construct() {
         $this->importTransactions = new ArrayCollection();
     }
@@ -102,12 +107,12 @@ class User {
         return $this;
     }
 
-    public function getPassword(): ?string {
-        return $this->password;
+    public function verifyPassword(string $password): bool {
+        return password_verify($password, $this->password);
     }
 
     public function setPassword(string $password): self {
-        $this->password = $password;
+        $this->password = password_hash($password, PASSWORD_BCRYPT);
 
         return $this;
     }
@@ -152,6 +157,19 @@ class User {
         return $this;
     }
 
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(?\DateTimeInterface $deletedAt): self
+    {
+        $this->deletedAt = $deletedAt;
+
+        return $this;
+    }
+
     /**
      * @return Collection|ImportTransaction[]
      */
@@ -191,8 +209,10 @@ class User {
         $json['created_at'] = $this->getCreatedAt();
         $json['role'] = $this->getRole();
         $json['blocked'] = $this->getIsBlocked();
-        $json['lastActiveAt'] = $this->getLastActiveAt();
+        $json['last_active_at'] = $this->getLastActiveAt();
+        $json['deteled_at'] = $this->getDeletedAt();
 
         return $json;
     }
+
 }

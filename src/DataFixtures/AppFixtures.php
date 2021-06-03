@@ -23,7 +23,7 @@ class AppFixtures extends Fixture
             $user = new User();
             $user->setUserName("user_$i");
             $user->setName("Иванов Иван Иванович");
-            $user->setPassword(password_hash("P@ssw0rd_$i", PASSWORD_BCRYPT));
+            $user->setPassword("P@ssw0rd_$i");
             $user->setEmail("user_$i@example.com");
             $user->setRole(UserRoleList::U_USER);
             $user->setCreatedAt(new \DateTime());
@@ -33,7 +33,7 @@ class AppFixtures extends Fixture
             $reader = new User();
             $reader->setUserName("reader_$i");
             $reader->setName("Иванов Иван Иванович");
-            $reader->setPassword(password_hash("P@ssw0rd_$i", PASSWORD_BCRYPT));
+            $reader->setPassword("P@ssw0rd_$i");
             $reader->setEmail("reader_$i@example.com");
             $reader->setRole(UserRoleList::U_READONLY);
             $reader->setCreatedAt(new \DateTime());
@@ -45,7 +45,7 @@ class AppFixtures extends Fixture
         $user = new User();
         $user->setUserName("admin");
         $user->setName("admin");
-        $user->setPassword(password_hash("P@ssw0rd", PASSWORD_BCRYPT));
+        $user->setPassword("P@ssw0rd");
         $user->setEmail("admin@example.com");
         $user->setRole(UserRoleList::U_ADMIN);
         $user->setCreatedAt(new \DateTime());

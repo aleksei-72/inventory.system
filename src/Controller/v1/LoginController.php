@@ -40,7 +40,7 @@ class LoginController extends AbstractController
         $userName = $inputJson['username'];
         $password = $inputJson['password'];
 
-        $usersList = $this->getDoctrine()->getRepository(User::class)->findBy(['userName' => $userName]);
+        $usersList = $this->getDoctrine()->getRepository(User::class)->findBy(['userName' => $userName, 'deletedAt' => null]);
 
         if (count($usersList) !== 1) {
             return $this->json(['error' => ErrorList::E_USER_NOT_FOUND, 'message' => 'user not found'], 404);
@@ -52,7 +52,7 @@ class LoginController extends AbstractController
             return $this->json(['error' => ErrorList::E_USER_BLOCKED, 'message' => 'this user is blocked'], 403);
         }
 
-        if (!password_verify($password, $user->getPassword())) {
+        if (!$user->verifyPassword($password)) {
             return $this->json(['error' => ErrorList::E_INVALID_PASSWORD, 'message' => 'password not verify'], 400);
         }
 

@@ -50,7 +50,7 @@ class UserController extends AbstractController
 
         $user->setUserName($userName);
         $user->setName('новый Пользователь ' . $i);
-        $user->setPassword(password_hash('P@ssw0rd', PASSWORD_BCRYPT));
+        $user->setPassword('P@ssw0rd');
         $user->setRole(UserRoleList::U_READONLY);
         $user->setCreatedAt(new \DateTime());
         $user->setIsBlocked(true);
@@ -168,7 +168,7 @@ class UserController extends AbstractController
                 }
 
 
-                $user->setPassword(password_hash($inputJson['password'], PASSWORD_BCRYPT));
+                $user->setPassword($inputJson['password']);
             }
 
 
@@ -245,7 +245,7 @@ class UserController extends AbstractController
         }
 
         $manager = $this->getDoctrine()->getManager();
-        $manager->remove($user);
+        $user->setDeletedAt(new \DateTime());
         $manager->flush();
 
         return $this->json(null, 204);
