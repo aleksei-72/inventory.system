@@ -40,7 +40,7 @@ class RawColumnsRequester
 
         $sort = array_keys($order)[0];
 
-        $sortOrder = $order[$sort];
+        $sort = str_replace('%order%', $order[$sort], $sort);
 
         $queryParams = array();
 
@@ -156,7 +156,7 @@ class RawColumnsRequester
 
 
         $dql = "SELECT $selected FROM App\Entity\Item i $joins " .
-            "WHERE $where ORDER BY $sort $sortOrder";
+            "WHERE $where ORDER BY $sort";
 
 
         $query = $this->manager->createQuery($dql)->setParameters($queryParams);
