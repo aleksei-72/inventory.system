@@ -210,7 +210,7 @@ class User {
         $json['role'] = $this->getRole();
         $json['blocked'] = $this->getIsBlocked();
         $json['last_active_at'] = $this->getLastActiveAt();
-        $json['deteled_at'] = $this->getDeletedAt();
+        $json['deleted_at'] = $this->getDeletedAt();
 
         return $json;
     }
