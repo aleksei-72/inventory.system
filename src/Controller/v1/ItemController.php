@@ -106,18 +106,8 @@ class ItemController extends AbstractController
 
         $findCriteria = array();
 
-        if ($categoryId !== 0) {
-
-            if (!is_numeric($categoryId) || $categoryId < 0) {
-                $categoryId = 0;
-            }
-
-
-            $findCategory = $doctrine->getRepository(Category::class)->find((int)$categoryId);
-
-            if ($findCategory) {
-                $findCriteria['category'] = $findCategory->getId();
-            }
+        if ($categoryId == 0 || !is_numeric($categoryId)) {
+            $categoryId = 0;
         }
 
 
@@ -168,11 +158,11 @@ class ItemController extends AbstractController
             return $this->json(['error' => ErrorList::E_NOT_FOUND, 'message' => 'item not found'], 404);
         }
 
-        if (!empty($inputJson['number']) && is_numeric($inputJson['number'])) {
+        if (isset($inputJson['number']) && is_numeric($inputJson['number'])) {
             $item->setNumber($inputJson['number']);
         }
 
-        if (!empty($inputJson['price']) && is_numeric($inputJson['price'])) {
+        if (isset($inputJson['price']) && is_numeric($inputJson['price'])) {
             $item->setPrice($inputJson['price']);
         }
 
@@ -184,7 +174,7 @@ class ItemController extends AbstractController
             $item->setComment($inputJson['comment']);
         }
 
-        if (!empty($inputJson['count']) && preg_match('/^(\d+\s\D+)$/u', $inputJson['count'])) {
+        if (isset($inputJson['count']) && preg_match('/^(\d+\s\D+)$/u', $inputJson['count'])) {
             $item->setCount($inputJson['count']);
         }
 
