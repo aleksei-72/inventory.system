@@ -70,7 +70,7 @@ class UserController extends AbstractController
      * @return JsonResponse
      */
     public function getUsersList(): JsonResponse {
-        $users = $this->getDoctrine()->getRepository(User::class)->findBy([],['id' => 'ASC']);
+        $users = $this->getDoctrine()->getRepository(User::class)->findBy([],['createdAt' => 'DESC']);
 
         $json = array();
 
