@@ -83,7 +83,7 @@ class ImportController extends AbstractController
      * @return JsonResponse
      */
     public function getImportList(): JsonResponse {
-        $imports = $this->getDoctrine()->getRepository(ImportTransaction::class)->findBy([],['id' => 'ASC']);
+        $imports = $this->getDoctrine()->getRepository(ImportTransaction::class)->findBy([],['id' => 'DESC']);
 
         $json = array();
 
