@@ -67,7 +67,7 @@ class ControllerListener
 
             //Токен не найден
             $event->setController(function () {
-                return new JsonResponse(['error' => ErrorList::E_DONT_HAVE_PERMISSION,
+                return new JsonResponse(['error' => ErrorList::E_UNAUTHORIZED,
                     'message' => "this request is not access without authorization"], 401);
             });
             return 1;
