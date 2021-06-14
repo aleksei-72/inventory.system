@@ -17,7 +17,7 @@ class JwtToken
 'x2+m6Qn81HgTAiBqEyuPrcGBQD9Cgpnv3Pzxh4tk3nu89nTGQTulLlqU6QIgVxiV'.
 '8Doa4t08r2hV44xr01TTyzu5KxIIi8pR/4Mg8R4=';
 
-    const jwtExp = 60*5;//*60*24*365*5;
+    const jwtExp = 60*60*24*5;
 
     public static $globalPayload = array();
 
