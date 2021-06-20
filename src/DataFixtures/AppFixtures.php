@@ -16,31 +16,6 @@ class AppFixtures extends Fixture
 {
     public function load(ObjectManager $manager)
     {
-        // $product = new Product();
-        // $manager->persist($product);
-
-        for ($i = 0; $i < 10; $i++) {
-            $user = new User();
-            $user->setUserName("user_$i");
-            $user->setName("Иванов Иван Иванович");
-            $user->setPassword("P@ssw0rd_$i");
-            $user->setEmail("user_$i@example.com");
-            $user->setRole(UserRoleList::U_USER);
-            $user->setCreatedAt(new \DateTime());
-
-
-
-            $reader = new User();
-            $reader->setUserName("reader_$i");
-            $reader->setName("Иванов Иван Иванович");
-            $reader->setPassword("P@ssw0rd_$i");
-            $reader->setEmail("reader_$i@example.com");
-            $reader->setRole(UserRoleList::U_READONLY);
-            $reader->setCreatedAt(new \DateTime());
-
-            $manager->persist($user);
-            $manager->persist($reader);
-        }
 
         $user = new User();
         $user->setUserName("admin");
@@ -51,8 +26,6 @@ class AppFixtures extends Fixture
         $user->setCreatedAt(new \DateTime());
 
         $manager->persist($user);
-
-
         $manager->flush();
     }
 
