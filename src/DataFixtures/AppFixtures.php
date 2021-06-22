@@ -25,7 +25,14 @@ class AppFixtures extends Fixture
         $user->setRole(UserRoleList::U_ADMIN);
         $user->setCreatedAt(new \DateTime());
 
+        $department = new Department();
+        $department->setTitle("Корпус №1");
+        $department->setAddress("");
+
+
         $manager->persist($user);
+        $manager->persist($department);
+
         $manager->flush();
     }
 

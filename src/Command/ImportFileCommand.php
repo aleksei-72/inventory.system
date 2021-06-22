@@ -252,12 +252,6 @@ class ImportFileCommand extends Command
             $newItem->setCreatedAt(new \DateTime());
             $newItem->setUpdatedAt(new \DateTime());
 
-            if (!empty($item['title'])) {
-                $newItem->setTitle($item['title']);
-            } else {
-                $newItem->setTitle('');
-            }
-
 
             if (!empty($item['department'])) {
 
@@ -356,7 +350,11 @@ class ImportFileCommand extends Command
                 $newItem->setComment($item['comment']);
             }
 
-            $manager->persist($newItem);
+            if (!empty($item['title'])) {
+                $newItem->setTitle($item['title']);
+                $manager->persist($newItem);
+            }
+
         }
 
 
