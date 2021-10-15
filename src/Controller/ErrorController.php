@@ -29,6 +29,12 @@ class ErrorController extends AbstractController
             }
         }
 
-        return new JsonResponse(['error' => $error, 'message' => $message], $code);
+        return new JsonResponse([
+            'error' => $error,
+            'message' => $message,
+            'exception' => $exception->getMessage(),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine()
+        ], $code);
     }
 }

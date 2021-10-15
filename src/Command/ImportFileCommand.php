@@ -4,6 +4,7 @@
 namespace App\Command;
 
 
+use App\ArgumentResolver\ElasticClientResolver;
 use App\Entity\Category;
 use App\Entity\Department;
 use App\Entity\ImportTransaction;
@@ -11,6 +12,7 @@ use App\Entity\Item;
 use App\Entity\Profile;
 use App\Entity\Room;
 use App\Entity\User;
+use Elasticsearch\Client;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,12 +22,15 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ImportFileCommand extends Command
 {
     private $doctrine;
+    /** @var Client $client */
+    private Client $client;
 
     public function __construct(ContainerInterface $container, string $name = null)
     {
         ini_set('max_execution_time', 25);
 
         $this->doctrine = $container->get('doctrine');
+        $this->client = ((new ElasticClientResolver())->resolve(null, null))->current();
         parent::__construct($name);
     }
 
@@ -353,6 +358,12 @@ class ImportFileCommand extends Command
             if (!empty($item['title'])) {
                 $newItem->setTitle($item['title']);
                 $manager->persist($newItem);
+
+                $this->client->index([
+                    'index' => 'item',
+                    'id' => $newItem->getId(),
+                    'body' => $newItem->toJSON()
+                ]);
             }
 
         }
@@ -362,7 +373,7 @@ class ImportFileCommand extends Command
     }
 
 
-    private function findEntityInDataBaseAndResource(array $criterias, array $resource, $className): mixed {
+    private function findEntityInDataBaseAndResource(array $criterias, array $resource, $className) {
 
         //поиск в базе
         $entityInDB = $this->doctrine->getRepository($className)

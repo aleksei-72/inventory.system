@@ -10,6 +10,7 @@ use App\Entity\Item;
 use App\Entity\Room;
 use App\Entity\Profile;
 use App\ErrorList;
+use Elasticsearch\Client;
 use Symfony\Component\HttpFoundation\Request;
 use \Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,7 +27,7 @@ class ItemController extends AbstractController
      *
      * @return JsonResponse
      */
-    public function createItem(): JsonResponse {
+    public function createItem(Client $client): JsonResponse {
 
         $manager = $this->getDoctrine()->getManager();
 
@@ -43,6 +44,12 @@ class ItemController extends AbstractController
 
         $manager->persist($item);
         $manager->flush();
+
+        $client->index([
+            'index' => 'item',
+            'id' => $item->getId(),
+            'body' => $item->toJSON()
+        ]);
 
         return $this->json(['id' => $item->getId()]);
     }
@@ -82,14 +89,15 @@ class ItemController extends AbstractController
         $orderBy = $request->query->get('sort', ColumnList::itemSortingBy['updated_at']);
         $order = $request->query->get('order', 'desc');
         $query = $request->query->get('query', null);
+        $isElastic = (bool)($request->query->get('elastic', false));
 
         if (strtolower($order) !== 'asc') {
             $order = 'desc';
         }
 
 
-        if (array_key_exists($orderBy, ColumnList::itemSortingBy)) {
-            $orderBy = ColumnList::itemSortingBy[$orderBy];
+        if (!array_key_exists($orderBy, ColumnList::itemSortingBy)) {
+            $orderBy = 'updated_at';
         }
 
 
@@ -104,25 +112,24 @@ class ItemController extends AbstractController
 
         $doctrine = $this->getDoctrine();
 
-        $findCriteria = array();
-
         if ($categoryId == 0 || !is_numeric($categoryId)) {
-            $categoryId = 0;
+            $categoryId = null;
         }
 
 
         $itemRepos = $doctrine->getRepository(Item::class);
 
         if ($query) {
-            $items= $itemRepos->findByKeyWord($query, [$orderBy => $order], (int)$limit, (int)$skip);
-        } else {
 
-            if ($categoryId !== 0) {
-                $items = $itemRepos->findByCategory($categoryId, [$orderBy => $order], (int)$limit, (int)$skip);
-            } else {
+            if ($isElastic) {
+                $json = $itemRepos->searchElasticByKeyWord($query, [$orderBy => $order], (int)$limit, (int)$skip);
 
-                $items= $itemRepos->findByKeyWord('', [$orderBy => $order], (int)$limit, (int)$skip);
+                return $this->json($json);
             }
+
+            $items  = $itemRepos->searchByKeyWord($query, [$orderBy => $order], (int)$limit, (int)$skip);
+        } else {
+            $items = $itemRepos->findByCategory($categoryId, [$orderBy => $order], (int)$limit, (int)$skip);
         }
 
 
@@ -144,7 +151,7 @@ class ItemController extends AbstractController
      * @param $id
      * @return JsonResponse
      */
-    public function updateItem(Request $request, $id): JsonResponse {
+    public function updateItem(Request $request, $id, Client $client): JsonResponse {
         $inputJson = json_decode($request->getContent(), true);
 
         if (!$inputJson) {
@@ -259,6 +266,12 @@ class ItemController extends AbstractController
 
         $manager->flush();
 
+        $client->index([
+            'index' => 'item',
+            'id' => $item->getId(),
+            'body' => $item->toJSON()
+        ]);
+
         return $this->json($item->toJSON());
     }
 
@@ -270,7 +283,7 @@ class ItemController extends AbstractController
      * @param $id
      * @return JsonResponse
      */
-    public function deleteItem($id): JsonResponse {
+    public function deleteItem($id, Client $client): JsonResponse {
 
         $item = $this->getDoctrine()->getRepository(Item::class)->find($id);
 
@@ -279,6 +292,12 @@ class ItemController extends AbstractController
         }
         $manager = $this->getDoctrine()->getManager();
         $manager->remove($item);
+
+        $client->delete([
+            'index' => 'item',
+            'id' => $item->getId()
+        ]);
+
         $manager->flush();
 
         return $this->json(null, 204);

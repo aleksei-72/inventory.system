@@ -99,6 +99,15 @@
     "egulias/email-validator": {
         "version": "2.1.25"
     },
+    "elasticsearch/elasticsearch": {
+        "version": "v7.15.0"
+    },
+    "ezimuel/guzzlestreams": {
+        "version": "3.0.1"
+    },
+    "ezimuel/ringphp": {
+        "version": "1.1.2"
+    },
     "ezyang/htmlpurifier": {
         "version": "v4.13.0"
     },
@@ -176,6 +185,9 @@
     },
     "psr/simple-cache": {
         "version": "1.0.1"
+    },
+    "react/promise": {
+        "version": "v2.8.0"
     },
     "sensio/framework-extra-bundle": {
         "version": "5.2",
