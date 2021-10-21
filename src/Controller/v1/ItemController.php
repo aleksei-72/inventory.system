@@ -86,7 +86,7 @@ class ItemController extends AbstractController
         $limit = $request->query->get('limit', 50);
         $skip = $request->query->get('skip', 0);
         $categoryId = $request->query->get('category_id', 0);
-        $orderBy = $request->query->get('sort', ColumnList::itemSortingBy['updated_at']);
+        $orderBy = $request->query->get('sort', 'updated_at');
         $order = $request->query->get('order', 'desc');
         $query = $request->query->get('query', null);
         $isElastic = (bool)($request->query->get('elastic', false));

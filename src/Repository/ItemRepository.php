@@ -34,13 +34,13 @@ class ItemRepository extends ServiceEntityRepository
         $where = '(c.id = :category)';
 
         if (!$category) {
-            $where= '1=1';
+            $where = '1=1';
         }
 
-        $dql = "SELECT i FROM App\Entity\Item i JOIN i.category c " .
+        $dql = "SELECT i FROM App\Entity\Item i LEFT JOIN i.category c " .
             "WHERE $where ORDER BY $sort";
 
-        $dqlForTotalCount = "SELECT count(i.id) FROM App\Entity\Item i JOIN i.category c " .
+        $dqlForTotalCount = "SELECT count(i.id) FROM App\Entity\Item i LEFT JOIN i.category c " .
             "WHERE $where";
 
 
